@@ -1,0 +1,225 @@
+aid: flinks
+url: https://raw.githubusercontent.com/api-evangelist/flinks/refs/heads/main/apis.yml
+name: Flinks
+kind: company
+description: Flinks is a Canadian financial data platform (owned by National Bank
+  of Canada) that lets businesses connect to consumer and business bank accounts to
+  aggregate account, transaction, and statement data, verify identity, and derive
+  income, credit-risk, and fraud analytics. Access begins with a Flinks Connect
+  authentication session and a multi-step /Authorize (MFA) call, after which banking,
+  enrichment, and analytics endpoints are invoked with the returned RequestId.
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+tags:
+- Financial Data
+- Open Banking
+- Bank Aggregation
+- Fintech
+- Canada
+created: '2026-07-01'
+modified: '2026-07-01'
+specificationVersion: '0.19'
+apis:
+- aid: flinks:flinks-authorize-connect-api
+  name: Flinks Authorize / Connect API
+  tags:
+  - Authorize
+  - Connect
+  - MFA
+  - Session
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.flinks.com/api/authorize/endpoints/authorize
+  baseURL: https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices
+  properties:
+  - url: https://docs.flinks.com/api/authorize/endpoints/authorize
+    type: Documentation
+  - url: https://docs.flinks.com/reference/authorize
+    type: APIReference
+  - url: openapi/flinks-openapi.yml
+    type: OpenAPI
+  - url: collections/flinks.postman_collection.json
+    type: PostmanCollection
+  - url: collections/flinks.opencollection.json
+    type: OpenCollection
+  description: Opens a banking session for a Flinks Connect LoginId. Handles the
+    multi-step MFA flow - an initial /Authorize returns HTTP 203 with SecurityChallenges
+    when a challenge is required, and a resubmission with RequestId and SecurityResponses
+    returns HTTP 200 with the RequestId and Links used for subsequent data calls.
+- aid: flinks:flinks-accounts-detail-api
+  name: Flinks Accounts Detail API
+  tags:
+  - Accounts
+  - Transactions
+  - Banking Data
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.flinks.com/reference/getaccountsdetail
+  baseURL: https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices
+  properties:
+  - url: https://docs.flinks.com/reference/getaccountsdetail
+    type: Documentation
+  - url: https://docs.flinks.com/reference/step-2-calling-for-data
+    type: APIReference
+  - url: openapi/flinks-openapi.yml
+    type: OpenAPI
+  - url: collections/flinks.postman_collection.json
+    type: PostmanCollection
+  - url: collections/flinks.opencollection.json
+    type: OpenCollection
+  description: Returns full detail for each account linked to the session, including
+    account identity (transit / institution / account numbers), balances, up to 90
+    or 365 days of transactions, and holder KYC information. Long-running requests
+    return HTTP 202 and are polled via the /GetAccountsDetailAsync variant with the
+    same RequestId.
+- aid: flinks:flinks-accounts-summary-api
+  name: Flinks Accounts Summary API
+  tags:
+  - Accounts
+  - Balance
+  - Summary
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.flinks.com/reference/getaccountssummary
+  baseURL: https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices
+  properties:
+  - url: https://docs.flinks.com/reference/getaccountssummary
+    type: Documentation
+  - url: https://docs.flinks.com/reference/getaccountssummaryasync
+    type: APIReference
+  - url: openapi/flinks-openapi.yml
+    type: OpenAPI
+  - url: collections/flinks.postman_collection.json
+    type: PostmanCollection
+  - url: collections/flinks.opencollection.json
+    type: OpenCollection
+  description: Retrieves general account information - cardholder name (when
+    available), account balance, category, and EFT eligibility - without full
+    transaction history, using the RequestId from /Authorize. A /GetAccountsSummaryAsync
+    variant supports polling of long-running requests.
+- aid: flinks:flinks-statements-api
+  name: Flinks Statements API
+  tags:
+  - Statements
+  - PDF
+  - Documents
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.flinks.com/reference/getstatements-1
+  baseURL: https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices
+  properties:
+  - url: https://docs.flinks.com/reference/getstatements-1
+    type: Documentation
+  - url: openapi/flinks-openapi.yml
+    type: OpenAPI
+  - url: collections/flinks.postman_collection.json
+    type: PostmanCollection
+  - url: collections/flinks.opencollection.json
+    type: OpenCollection
+  description: Signs up one or more of the connected customer accounts to retrieve
+    PDF bank statements issued by their financial institution, referenced by the
+    session RequestId.
+- aid: flinks:flinks-identity-api
+  name: Flinks Identity API
+  tags:
+  - Identity
+  - Verification
+  - KYC
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.flinks.com/reference/choose-the-correct-endpoint
+  baseURL: https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices
+  properties:
+  - url: https://docs.flinks.com/reference/choose-the-correct-endpoint
+    type: Documentation
+  - url: openapi/flinks-openapi.yml
+    type: OpenAPI
+  - url: collections/flinks.postman_collection.json
+    type: PostmanCollection
+  - url: collections/flinks.opencollection.json
+    type: OpenCollection
+  description: Surfaces account-holder identity captured during aggregation - name,
+    civic address, email, and phone - and supports /FieldMatch verification that
+    compares supplied applicant fields against the identity on the connected bank
+    account.
+- aid: flinks:flinks-attributes-analytics-api
+  name: Flinks Attributes / Analytics API
+  tags:
+  - Attributes
+  - Enrich
+  - Categorization
+  - Analytics
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.flinks.com/guides/set-up-the-attributes-api-call
+  baseURL: https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices
+  properties:
+  - url: https://docs.flinks.com/guides/set-up-the-attributes-api-call
+    type: Documentation
+  - url: https://docs.flinks.com/docs/list-of-attributes-packages
+    type: APIReference
+  - url: openapi/flinks-openapi.yml
+    type: OpenAPI
+  - url: collections/flinks.postman_collection.json
+    type: PostmanCollection
+  - url: collections/flinks.opencollection.json
+    type: OpenCollection
+  description: The Enrich product returns pre-computed attribute packages derived
+    from aggregated transaction data via /GetAttributes, plus /GetCategorization for
+    categorized transactions and /Categories to list available transaction
+    categories.
+- aid: flinks:flinks-score-api
+  name: Flinks Score API
+  tags:
+  - Score
+  - Income
+  - Credit Risk
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.flinks.com/docs/getincomeattributes-1
+  baseURL: https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices
+  properties:
+  - url: https://docs.flinks.com/docs/getincomeattributes-1
+    type: Documentation
+  - url: https://docs.flinks.com/docs/getcreditriskattributes-1
+    type: APIReference
+  - url: openapi/flinks-openapi.yml
+    type: OpenAPI
+  - url: collections/flinks.postman_collection.json
+    type: PostmanCollection
+  - url: collections/flinks.opencollection.json
+    type: OpenCollection
+  description: Analytics endpoints that summarize a connected account into decisioning
+    signals - /GetIncomeAttributes for total, employment, and government income
+    verification, and /GetCreditRiskAttributes for income sources, loan and bill
+    payments, and additional risk measures.
+- aid: flinks:flinks-fraud-kyc-api
+  name: Flinks Fraud / KYC API
+  tags:
+  - Fraud
+  - KYC
+  - Upload
+  - Risk
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.flinks.com/docs/legacy-api-integrations
+  baseURL: https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices
+  properties:
+  - url: https://docs.flinks.com/docs/legacy-api-integrations
+    type: Documentation
+  - url: openapi/flinks-openapi.yml
+    type: OpenAPI
+  - url: collections/flinks.postman_collection.json
+    type: PostmanCollection
+  - url: collections/flinks.opencollection.json
+    type: OpenCollection
+  description: The Upload product ingests external bank statement / transaction data
+    via /Upload and runs /FraudAnalysis to surface tampering and fraud signals,
+    complementing the live-aggregation KYC data returned on connected accounts.
+common:
+- type: LinkedIn
+  url: https://www.linkedin.com/company/flinks
+- type: Website
+  url: https://flinks.com/
+- type: Documentation
+  url: https://docs.flinks.com/
+- type: Plans
+  url: plans/flinks-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/flinks-rate-limits.yml
+- type: FinOps
+  url: finops/flinks-finops.yml
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

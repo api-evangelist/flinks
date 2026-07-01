@@ -1,0 +1,242 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Flinks API",
+    "version": "3.0"
+  },
+  "request": {
+    "auth": {
+      "type": "apikey",
+      "key": "flinks-auth-key",
+      "value": "{{authorizeToken}}",
+      "in": "header"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Authorize",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Generate a short-lived authorize token.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{{instance}}-api.private.fin.ag/v3/{{customerId}}/BankingServices/GenerateAuthorizeToken",
+            "body": {
+              "type": "json",
+              "data": "{\n  \"secret\": \"{{apiSecret}}\"\n}"
+            }
+          },
+          "docs": "Exchanges your API secret for a 30-minute authorize token supplied in the flinks-auth-key header."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Connect",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Open a banking session and handle MFA.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{{instance}}-api.private.fin.ag/v3/{{customerId}}/BankingServices/Authorize",
+            "body": {
+              "type": "json",
+              "data": "{\n  \"LoginId\": \"{{loginId}}\",\n  \"MostRecentCached\": true,\n  \"Language\": \"en\"\n}"
+            }
+          },
+          "docs": "Opens a session. Returns 200 with RequestId on success, or 203 with SecurityChallenges when MFA is required. Resubmit with RequestId and SecurityResponses."
+        },
+        {
+          "info": {
+            "name": "Retrieve full account detail and transactions.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{{instance}}-api.private.fin.ag/v3/{{customerId}}/BankingServices/GetAccountsDetail",
+            "body": {
+              "type": "json",
+              "data": "{\n  \"RequestId\": \"{{requestId}}\",\n  \"WithAccountIdentity\": true,\n  \"WithKYC\": true,\n  \"WithTransactions\": true,\n  \"DaysOfTransactions\": \"Days90\"\n}"
+            }
+          },
+          "docs": "Returns account identity, balances, transactions, and holder KYC. May return 202; poll GetAccountsDetailAsync."
+        },
+        {
+          "info": {
+            "name": "Poll a pending accounts-detail request.",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://{{instance}}-api.private.fin.ag/v3/{{customerId}}/BankingServices/GetAccountsDetailAsync/{{requestId}}"
+          },
+          "docs": "Polls a pending GetAccountsDetail request with the same RequestId until HTTP 200."
+        },
+        {
+          "info": {
+            "name": "Retrieve general account summary information.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{{instance}}-api.private.fin.ag/v3/{{customerId}}/BankingServices/GetAccountsSummary",
+            "body": {
+              "type": "json",
+              "data": "{\n  \"RequestId\": \"{{requestId}}\"\n}"
+            }
+          },
+          "docs": "Returns cardholder name, balance, category, and EFT eligibility without full transaction history."
+        },
+        {
+          "info": {
+            "name": "Retrieve PDF bank statements.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{{instance}}-api.private.fin.ag/v3/{{customerId}}/BankingServices/GetStatements",
+            "body": {
+              "type": "json",
+              "data": "{\n  \"RequestId\": \"{{requestId}}\",\n  \"NumberOfStatements\": \"Months3\"\n}"
+            }
+          },
+          "docs": "Signs up connected accounts to retrieve PDF statements issued by their financial institution."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Identity",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Verify applicant fields against the connected account holder.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{{instance}}-api.private.fin.ag/v3/{{customerId}}/BankingServices/FieldMatch",
+            "body": {
+              "type": "json",
+              "data": "{\n  \"RequestId\": \"{{requestId}}\",\n  \"Name\": \"Jane Doe\",\n  \"Email\": \"jane@example.com\"\n}"
+            }
+          },
+          "docs": "Compares supplied applicant identity fields against the identity captured on the connected bank account."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Enrich",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Return categorized transactional data.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{{instance}}-api.private.fin.ag/v3/{{customerId}}/BankingServices/GetCategorization",
+            "body": {
+              "type": "json",
+              "data": "{\n  \"RequestId\": \"{{requestId}}\"\n}"
+            }
+          },
+          "docs": "Returns categorized transactional data derived from the aggregated account."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Score",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Standardized income verification attributes.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{{instance}}-api.private.fin.ag/v3/{{customerId}}/BankingServices/GetIncomeAttributes",
+            "body": {
+              "type": "json",
+              "data": "{\n  \"RequestId\": \"{{requestId}}\"\n}"
+            }
+          },
+          "docs": "Returns total, employment, and government income for standardized income verification."
+        },
+        {
+          "info": {
+            "name": "Credit risk and income attributes.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{{instance}}-api.private.fin.ag/v3/{{customerId}}/BankingServices/GetCreditRiskAttributes",
+            "body": {
+              "type": "json",
+              "data": "{\n  \"RequestId\": \"{{requestId}}\"\n}"
+            }
+          },
+          "docs": "Returns income sources, loan and bill payments, and additional risk analysis measures."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Fraud",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Process externally supplied bank statement / transaction data.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{{instance}}-api.private.fin.ag/v3/{{customerId}}/BankingServices/Upload",
+            "body": {
+              "type": "multipart-form",
+              "data": []
+            }
+          },
+          "docs": "Ingests external bank statement / transaction documents for processing."
+        },
+        {
+          "info": {
+            "name": "Run fraud analysis on uploaded documents.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{{instance}}-api.private.fin.ag/v3/{{customerId}}/BankingServices/FraudAnalysis",
+            "body": {
+              "type": "json",
+              "data": "{\n  \"RequestId\": \"{{requestId}}\"\n}"
+            }
+          },
+          "docs": "Surfaces tampering and fraud signals from an uploaded document set."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,749 @@
+openapi: 3.0.1
+info:
+  title: Flinks API
+  description: >-
+    Representative specification of the Flinks financial data API. Businesses
+    connect to consumer and business bank accounts to aggregate account,
+    transaction, and statement data, verify identity, and derive income,
+    credit-risk, and fraud analytics. A session is opened with the multi-step
+    /Authorize (MFA) endpoint using a LoginId returned by Flinks Connect; the
+    resulting RequestId is passed to subsequent data, enrichment, and analytics
+    endpoints. All calls are authenticated with a short-lived authorize token
+    supplied in the flinks-auth-key header.
+  termsOfService: https://flinks.com/terms-of-service/
+  contact:
+    name: Flinks Support
+    url: https://help.flinks.com/
+  version: '3.0'
+servers:
+  - url: https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices
+    description: Flinks per-customer instance host.
+    variables:
+      instance:
+        default: toolbox
+        description: Assigned instance / environment prefix (e.g. toolbox for sandbox).
+      customerId:
+        default: '00000000-0000-0000-0000-000000000000'
+        description: Your Flinks customer identifier (GUID).
+paths:
+  /GenerateAuthorizeToken:
+    post:
+      operationId: generateAuthorizeToken
+      tags:
+        - Authorize
+      summary: Generate a short-lived authorize token.
+      description: >-
+        Exchanges your API secret for a 30-minute authorize token that must be
+        supplied in the flinks-auth-key header on all other endpoints.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateAuthorizeTokenRequest'
+      responses:
+        '200':
+          description: Authorize token generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizeTokenResponse'
+  /Authorize:
+    post:
+      operationId: authorize
+      tags:
+        - Connect
+      summary: Open a banking session and handle MFA.
+      description: >-
+        Opens a session for a Flinks Connect LoginId. Returns HTTP 200 with a
+        RequestId and Links on success, or HTTP 203 with SecurityChallenges when
+        a multi-factor challenge is required. Resubmit with RequestId and
+        SecurityResponses to complete the challenge.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizeRequest'
+      responses:
+        '200':
+          description: Authorization successful; session is ready for data calls.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizeResponse'
+        '203':
+          description: Multi-factor authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfaChallengeResponse'
+        '400':
+          description: Invalid parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /GetAccountsDetail:
+    post:
+      operationId: getAccountsDetail
+      tags:
+        - Connect
+      summary: Retrieve full account detail and transactions.
+      description: >-
+        Returns full detail for each linked account - identity, balances, up to
+        90 or 365 days of transactions, and holder KYC. May return HTTP 202;
+        poll /GetAccountsDetailAsync with the same RequestId until HTTP 200.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetAccountsDetailRequest'
+      responses:
+        '200':
+          description: Account detail returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsResponse'
+        '202':
+          description: Request accepted and processing; poll the async endpoint.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncPendingResponse'
+  /GetAccountsDetailAsync/{requestId}:
+    get:
+      operationId: getAccountsDetailAsync
+      tags:
+        - Connect
+      summary: Poll a pending accounts-detail request.
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The RequestId returned by /Authorize.
+      responses:
+        '200':
+          description: Account detail returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsResponse'
+        '202':
+          description: Still processing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncPendingResponse'
+  /GetAccountsSummary:
+    post:
+      operationId: getAccountsSummary
+      tags:
+        - Connect
+      summary: Retrieve general account summary information.
+      description: >-
+        Returns cardholder name (when available), balance, category, and EFT
+        eligibility for each linked account, without full transaction history.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestIdBody'
+      responses:
+        '200':
+          description: Account summary returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsResponse'
+        '202':
+          description: Processing; poll /GetAccountsSummaryAsync.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsyncPendingResponse'
+  /GetStatements:
+    post:
+      operationId: getStatements
+      tags:
+        - Connect
+      summary: Retrieve PDF bank statements.
+      description: >-
+        Signs up one or more connected accounts to retrieve PDF statements
+        issued by their financial institution.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetStatementsRequest'
+      responses:
+        '200':
+          description: Statements returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatementsResponse'
+  /FieldMatch:
+    post:
+      operationId: fieldMatch
+      tags:
+        - Identity
+      summary: Verify applicant fields against the connected account holder.
+      description: >-
+        Compares supplied applicant identity fields (name, address, phone,
+        email) against the identity captured on the connected bank account and
+        returns per-field match results.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FieldMatchRequest'
+      responses:
+        '200':
+          description: Field match results returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldMatchResponse'
+  /GetCategorization:
+    post:
+      operationId: getCategorization
+      tags:
+        - Enrich
+      summary: Return categorized transactional data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestIdBody'
+      responses:
+        '200':
+          description: Categorized transactions returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategorizationResponse'
+  /GetIncomeAttributes:
+    post:
+      operationId: getIncomeAttributes
+      tags:
+        - Score
+      summary: Standardized income verification attributes.
+      description: >-
+        Returns a high-level overview of total income, employment income, and
+        government income for standardized income verification.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttributesRequest'
+      responses:
+        '200':
+          description: Income attributes returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttributesResponse'
+  /GetCreditRiskAttributes:
+    post:
+      operationId: getCreditRiskAttributes
+      tags:
+        - Score
+      summary: Credit risk and income attributes.
+      description: >-
+        Returns overall financial information, employment and non-employment
+        income sources, loan payments, bill payments, and additional risk
+        analysis measures.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttributesRequest'
+      responses:
+        '200':
+          description: Credit risk attributes returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttributesResponse'
+  /Upload:
+    post:
+      operationId: upload
+      tags:
+        - Fraud
+      summary: Process externally supplied bank statement / transaction data.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadRequest'
+      responses:
+        '200':
+          description: Upload accepted and processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+  /FraudAnalysis:
+    post:
+      operationId: fraudAnalysis
+      tags:
+        - Fraud
+      summary: Run fraud analysis on uploaded documents.
+      description: >-
+        Surfaces tampering and fraud signals from an uploaded document set.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestIdBody'
+      responses:
+        '200':
+          description: Fraud analysis result returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FraudAnalysisResponse'
+components:
+  securitySchemes:
+    flinks_auth_key:
+      type: apiKey
+      in: header
+      name: flinks-auth-key
+      description: >-
+        Short-lived (30-minute) authorize token obtained from
+        /GenerateAuthorizeToken.
+  security:
+    - flinks_auth_key: []
+  schemas:
+    Error:
+      type: object
+      properties:
+        HttpStatusCode:
+          type: integer
+        Message:
+          type: string
+        FlinksCode:
+          type: string
+          description: >-
+            Machine-readable code such as INVALID_LOGIN, DISABLED_LOGIN, or
+            QUESTION_NOT_FOUND.
+      required:
+        - HttpStatusCode
+        - Message
+    GenerateAuthorizeTokenRequest:
+      type: object
+      properties:
+        secret:
+          type: string
+          description: Your Flinks API secret.
+      required:
+        - secret
+    AuthorizeTokenResponse:
+      type: object
+      properties:
+        AuthorizeToken:
+          type: string
+        ExpiresIn:
+          type: integer
+          description: Token lifetime in seconds (1800).
+    Link:
+      type: object
+      properties:
+        rel:
+          type: string
+        href:
+          type: string
+        method:
+          type: string
+    AuthorizeRequest:
+      type: object
+      properties:
+        LoginId:
+          type: string
+          format: uuid
+          description: Identifier returned by Flinks Connect after a successful login.
+        MostRecentCached:
+          type: boolean
+          default: true
+          description: Use cached data (true, recommended) or live mode (false).
+        Language:
+          type: string
+          enum: [en, fr]
+          default: en
+        Save:
+          type: boolean
+          default: true
+        Tag:
+          type: string
+        RequestId:
+          type: string
+          format: uuid
+          description: Required when resubmitting after an MFA challenge.
+        SecurityResponses:
+          type: object
+          description: >-
+            Map of MFA question prompts to arrays of user answers.
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      required:
+        - LoginId
+    AuthorizeResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Institution:
+          type: string
+        InstitutionId:
+          type: string
+        Login:
+          type: object
+        Links:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        HttpStatusCode:
+          type: integer
+          example: 200
+    SecurityChallenge:
+      type: object
+      properties:
+        Type:
+          type: string
+        Iterables:
+          type: array
+          items:
+            type: string
+        Prompt:
+          type: string
+    MfaChallengeResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        SecurityChallenges:
+          type: array
+          items:
+            $ref: '#/components/schemas/SecurityChallenge'
+        HttpStatusCode:
+          type: integer
+          example: 203
+    RequestIdBody:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+          description: RequestId returned by /Authorize.
+      required:
+        - RequestId
+    GetAccountsDetailRequest:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        WithAccountIdentity:
+          type: boolean
+          default: true
+          description: Include transit / institution / account numbers.
+        WithKYC:
+          type: boolean
+          default: true
+          description: Include account-holder identity information.
+        WithTransactions:
+          type: boolean
+          default: true
+        DaysOfTransactions:
+          type: string
+          enum: [Days90, Days365]
+        AccountsFilter:
+          type: array
+          items:
+            type: string
+        WithDetailsAndBankingStatements:
+          type: boolean
+      required:
+        - RequestId
+    GetStatementsRequest:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        AccountsFilter:
+          type: array
+          items:
+            type: string
+        NumberOfStatements:
+          type: string
+          description: Number of PDF statements to retrieve (e.g. Months3, Months12).
+      required:
+        - RequestId
+    Balance:
+      type: object
+      properties:
+        Available:
+          type: number
+        Current:
+          type: number
+        Limit:
+          type: number
+    Transaction:
+      type: object
+      properties:
+        Date:
+          type: string
+          format: date
+        Description:
+          type: string
+        Debit:
+          type: number
+          nullable: true
+        Credit:
+          type: number
+          nullable: true
+        Balance:
+          type: number
+    Holder:
+      type: object
+      properties:
+        Name:
+          type: string
+        Address:
+          type: object
+          properties:
+            CivicAddress:
+              type: string
+            City:
+              type: string
+            Province:
+              type: string
+            PostalCode:
+              type: string
+            Country:
+              type: string
+        Email:
+          type: string
+        PhoneNumber:
+          type: string
+    Account:
+      type: object
+      properties:
+        Id:
+          type: string
+        Title:
+          type: string
+        AccountNumber:
+          type: string
+        LastFourDigits:
+          type: string
+        TransitNumber:
+          type: string
+        InstitutionNumber:
+          type: string
+        Category:
+          type: string
+        Type:
+          type: string
+        Currency:
+          type: string
+        Balance:
+          $ref: '#/components/schemas/Balance'
+        Transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+        Holder:
+          $ref: '#/components/schemas/Holder'
+    AccountsResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
+        Institution:
+          type: string
+        HttpStatusCode:
+          type: integer
+          example: 200
+    AsyncPendingResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        HttpStatusCode:
+          type: integer
+          example: 202
+        Message:
+          type: string
+          example: Operation is pending; poll the async endpoint.
+    Statement:
+      type: object
+      properties:
+        AccountId:
+          type: string
+        FileName:
+          type: string
+        Base64Content:
+          type: string
+          description: Base64-encoded PDF statement.
+    StatementsResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Statements:
+          type: array
+          items:
+            $ref: '#/components/schemas/Statement'
+    FieldMatchRequest:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Name:
+          type: string
+        Address:
+          type: string
+        Email:
+          type: string
+        PhoneNumber:
+          type: string
+      required:
+        - RequestId
+    FieldMatchResult:
+      type: object
+      properties:
+        Field:
+          type: string
+        Matched:
+          type: boolean
+        Score:
+          type: number
+    FieldMatchResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldMatchResult'
+    Category:
+      type: object
+      properties:
+        Name:
+          type: string
+        Amount:
+          type: number
+        Count:
+          type: integer
+    CategorizationResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    AttributesRequest:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Package:
+          type: string
+          description: Attributes package name to compute.
+      required:
+        - RequestId
+    Attribute:
+      type: object
+      properties:
+        Name:
+          type: string
+        Value:
+          type: string
+    AttributesResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attribute'
+    UploadRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+          description: The bank statement or transaction document to process.
+        Tag:
+          type: string
+      required:
+        - file
+    UploadResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Status:
+          type: string
+    FraudAnalysisResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        FraudScore:
+          type: number
+        Signals:
+          type: array
+          items:
+            type: object
+            properties:
+              Name:
+                type: string
+              Severity:
+                type: string
+security:
+  - flinks_auth_key: []

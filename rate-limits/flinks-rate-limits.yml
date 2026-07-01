@@ -1,0 +1,67 @@
+specification: API Commons Rate Limits
+specificationVersion: '0.1'
+schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/RateLimits
+provider: Flinks
+providerId: flinks
+created: '2026-07-01'
+modified: '2026-07-01'
+reconciled: false
+tags:
+- Financial Data
+- Open Banking
+- Bank Aggregation
+- Fintech
+- Canada
+- Rate Limiting
+- Quotas
+- Throttling
+description: >-
+  Flinks does not publish specific public per-endpoint rate limits. Throughput
+  is governed by the customer contract and by the nature of the aggregation
+  flow: an authorize token is valid for 30 minutes, long-running data calls
+  (GetAccountsDetail / GetAccountsSummary) return HTTP 202 and must be polled
+  via their Async variants roughly every 10 seconds up to a ~30-minute timeout,
+  and cached (MostRecentCached) mode is recommended over live mode to reduce
+  load on financial institutions. Specific numeric limits are not reconciled in
+  this artifact.
+notes: >-
+  Verify contract-specific concurrency and per-product limits with Flinks during
+  reconciliation; polling cadence and timeouts reflect documented async behavior.
+sources:
+- https://docs.flinks.com/reference/step-2-calling-for-data
+- https://docs.flinks.com/reference/step-3-calling-for-pending-data
+- https://docs.flinks.com/api/authorize/endpoints/authorize
+responseCodes:
+  throttled: 429
+  pending: 202
+limits:
+- name: Authorize Token Lifetime
+  scope: session
+  metric: minutes
+  limit: '30'
+  notes: The flinks-auth-key token expires 30 minutes after generation.
+- name: Async Polling Cadence
+  scope: request
+  metric: seconds
+  limit: '10'
+  notes: Poll the Async endpoint with the same RequestId roughly every 10 seconds while HTTP 202.
+- name: Async Request Timeout
+  scope: request
+  metric: minutes
+  limit: '30'
+  notes: A pending data request times out after approximately 30 minutes.
+- name: Concurrency / Throughput
+  scope: account
+  metric: requests
+  limit: see contract
+  notes: Contract-governed; not published publicly.
+policies:
+- name: Cached Mode Preferred
+  description: Use MostRecentCached=true to serve cached data and avoid unnecessary live institution hits.
+- name: Async Polling
+  description: Honor HTTP 202 and poll the matching Async endpoint rather than retrying the synchronous call.
+- name: Backoff Strategy
+  description: Implement exponential backoff with jitter and honor Retry-After on HTTP 429.
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

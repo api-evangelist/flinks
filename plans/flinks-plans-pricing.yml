@@ -1,0 +1,120 @@
+specification: API Commons Plans
+specificationVersion: '0.1'
+schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/Plans
+provider: Flinks
+providerId: flinks
+created: '2026-07-01'
+modified: '2026-07-01'
+reconciled: false
+tags:
+- Financial Data
+- Open Banking
+- Bank Aggregation
+- Fintech
+- Canada
+- Plans
+description: >-
+  Flinks does not publish public self-serve pricing. Access is sold through
+  sales-quoted, contract-based agreements scoped to the products used - Connect
+  (aggregation), Enrich (attributes), Score (income / credit-risk analytics),
+  Pay (EFT / Interac), Upload (document processing / fraud), and Outbound (open
+  banking). Pricing is typically per-connection / per-Card-linked and per
+  enrichment or analytics call, with volume commitments and enterprise terms
+  negotiated per customer. A no-cost sandbox (Toolbox) is available for testing.
+notes: >-
+  No public rate card is published. Contact Flinks sales for a quote; figures
+  here describe the commercial model, not specific rates.
+sources:
+- https://flinks.com/
+- https://flinks.com/go/financial-data-api
+- https://docs.flinks.com/
+plans:
+- id: flinks-sandbox
+  name: Toolbox (Sandbox)
+  type: free
+  description: >-
+    No-cost sandbox environment with test institutions and simulated data for
+    building and validating an integration before signing a contract.
+  entries:
+  - label: Sandbox Access
+    name: sandbox
+    type: flat
+    metric: environment
+    limit: -1
+    timeFrame: month
+    geo: global
+    unit: 1
+    price: free
+    userMultiplied: false
+  elements:
+  - name: Flinks Connect
+  - name: Test Institutions
+- id: flinks-enterprise
+  name: Enterprise (Sales-Quoted)
+  type: enterprise
+  description: >-
+    Contract-based production access with pricing scoped to the products and
+    volume used. Negotiated per customer with volume commitments, SLAs, and
+    support tiers.
+  entries:
+  - label: Connect (Aggregation)
+    name: connect
+    type: usage
+    metric: connections
+    limit: -1
+    timeFrame: month
+    geo: canada
+    unit: 1
+    price: contact sales
+    userMultiplied: false
+  - label: Enrich (Attributes)
+    name: enrich
+    type: usage
+    metric: requests
+    limit: -1
+    timeFrame: month
+    geo: canada
+    unit: 1
+    price: contact sales
+    userMultiplied: false
+  - label: Score (Income / Credit Risk)
+    name: score
+    type: usage
+    metric: requests
+    limit: -1
+    timeFrame: month
+    geo: canada
+    unit: 1
+    price: contact sales
+    userMultiplied: false
+  - label: Pay (EFT / Interac)
+    name: pay
+    type: usage
+    metric: transactions
+    limit: -1
+    timeFrame: month
+    geo: canada
+    unit: 1
+    price: contact sales
+    userMultiplied: false
+  - label: Upload (Document Processing / Fraud)
+    name: upload
+    type: usage
+    metric: documents
+    limit: -1
+    timeFrame: month
+    geo: canada
+    unit: 1
+    price: contact sales
+    userMultiplied: false
+  elements:
+  - name: Flinks Connect
+  - name: Enrich
+  - name: Score
+  - name: Pay
+  - name: Upload
+  - name: Outbound
+  - name: Dedicated Support
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

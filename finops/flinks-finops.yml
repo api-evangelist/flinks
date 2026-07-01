@@ -1,0 +1,103 @@
+specification: FinOps Framework
+specificationVersion: '1.0'
+schema: https://www.finops.org/framework/
+provider: Flinks
+providerId: flinks
+created: '2026-07-01'
+modified: '2026-07-01'
+reconciled: false
+tags:
+- Financial Data
+- Open Banking
+- Bank Aggregation
+- Fintech
+- Canada
+- FinOps
+- Cost Management
+- FOCUS
+description: >-
+  FinOps view of Flinks spend. Flinks bills through sales-quoted enterprise
+  contracts rather than public usage rates. Cost typically accrues per bank
+  connection (Connect), per enrichment or analytics call (Enrich / Score), per
+  payment transaction (Pay), and per processed document (Upload). Because
+  Connect is the primary billable event, cached (MostRecentCached) mode and
+  careful re-authorization reduce redundant institution hits and spend.
+notes: >-
+  Contract-specific rates are not public; verify billable units and invoicing
+  cadence with Flinks during reconciliation.
+sources:
+- https://flinks.com/
+- https://flinks.com/go/financial-data-api
+- https://docs.flinks.com/
+- https://focus.finops.org/focus-specification/v1-3/
+alignedWith:
+  framework: FinOps Foundation Framework
+  frameworkUrl: https://www.finops.org/framework/
+  dataSpec: FOCUS
+  dataSpecVersion: '1.3'
+  dataSpecUrl: https://focus.finops.org/focus-specification/v1-3/
+publisherName: Flinks
+serviceCategory: Financial Data and Analytics
+billingModel:
+  pricingCategory: Committed-Use
+  billingFrequency: Monthly
+  billingCurrency: CAD
+  chargeCategories:
+  - Usage
+  - Purchase
+  - Adjustment
+focusColumns:
+  ServiceName: Flinks
+  ServiceCategory: Financial Data and Analytics
+  ProviderName: Flinks
+  PublisherName: Flinks
+  InvoiceIssuerName: Flinks
+  BillingCurrency: CAD
+  ChargeCategory: Usage
+  PricingCategory: Committed-Use
+meters:
+- name: connections
+  description: Bank connections established via Connect / Authorize, the primary billable aggregation event.
+  unit: connections
+  aggregation: sum
+  dimensions:
+  - account
+  - institution
+- name: enrichment_requests
+  description: Enrich attribute and categorization calls (GetAttributes / GetCategorization).
+  unit: requests
+  aggregation: sum
+  dimensions:
+  - account
+  - package
+- name: score_requests
+  description: Income and credit-risk analytics calls (GetIncomeAttributes / GetCreditRiskAttributes).
+  unit: requests
+  aggregation: sum
+  dimensions:
+  - account
+  - package
+- name: payment_transactions
+  description: EFT / Interac payment transactions processed via the Pay product.
+  unit: transactions
+  aggregation: sum
+  dimensions:
+  - account
+- name: documents_processed
+  description: Bank statement / transaction documents processed via Upload and FraudAnalysis.
+  unit: documents
+  aggregation: sum
+  dimensions:
+  - account
+principles:
+- name: Visibility
+  description: Track billable connections and enrichment / analytics calls per workload against the contract.
+- name: Allocation
+  description: Tag requests (Tag field) per team / product line and map to internal cost centers.
+- name: Optimization
+  description: Prefer cached mode, reuse valid sessions, and only call Enrich / Score packages that decisioning requires.
+- name: Accountability
+  description: Assign owners per integration and review connection and analytics volume monthly against commitments.
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

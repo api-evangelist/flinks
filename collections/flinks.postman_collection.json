@@ -1,0 +1,530 @@
+{
+  "item": [
+    {
+      "name": "Authorize",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "name": "Generate a short-lived authorize token.",
+          "request": {
+            "name": "Generate a short-lived authorize token.",
+            "description": {
+              "content": "Exchanges your API secret for a 30-minute authorize token supplied in the flinks-auth-key header.",
+              "type": "text/plain"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/GenerateAuthorizeToken",
+              "path": ["GenerateAuthorizeToken"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"secret\": \"{{apiSecret}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "event": []
+    },
+    {
+      "name": "Connect",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "name": "Open a banking session and handle MFA.",
+          "request": {
+            "name": "Open a banking session and handle MFA.",
+            "description": {
+              "content": "Returns 200 with RequestId on success, or 203 with SecurityChallenges when MFA is required. Resubmit with RequestId and SecurityResponses.",
+              "type": "text/plain"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/Authorize",
+              "path": ["Authorize"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "flinks-auth-key",
+                "value": "{{authorizeToken}}"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"LoginId\": \"{{loginId}}\",\n  \"MostRecentCached\": true,\n  \"Language\": \"en\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Retrieve full account detail and transactions.",
+          "request": {
+            "name": "Retrieve full account detail and transactions.",
+            "description": {
+              "content": "Returns account identity, balances, transactions, and holder KYC. May return 202; poll GetAccountsDetailAsync.",
+              "type": "text/plain"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/GetAccountsDetail",
+              "path": ["GetAccountsDetail"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "flinks-auth-key",
+                "value": "{{authorizeToken}}"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"RequestId\": \"{{requestId}}\",\n  \"WithAccountIdentity\": true,\n  \"WithKYC\": true,\n  \"WithTransactions\": true,\n  \"DaysOfTransactions\": \"Days90\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Poll a pending accounts-detail request.",
+          "request": {
+            "name": "Poll a pending accounts-detail request.",
+            "description": {
+              "content": "Polls a pending GetAccountsDetail request with the same RequestId until HTTP 200.",
+              "type": "text/plain"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/GetAccountsDetailAsync/{{requestId}}",
+              "path": ["GetAccountsDetailAsync", "{{requestId}}"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "flinks-auth-key",
+                "value": "{{authorizeToken}}"
+              }
+            ],
+            "method": "GET",
+            "body": {}
+          },
+          "response": []
+        },
+        {
+          "name": "Retrieve general account summary information.",
+          "request": {
+            "name": "Retrieve general account summary information.",
+            "description": {
+              "content": "Returns cardholder name, balance, category, and EFT eligibility without full transaction history.",
+              "type": "text/plain"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/GetAccountsSummary",
+              "path": ["GetAccountsSummary"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "flinks-auth-key",
+                "value": "{{authorizeToken}}"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"RequestId\": \"{{requestId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Retrieve PDF bank statements.",
+          "request": {
+            "name": "Retrieve PDF bank statements.",
+            "description": {
+              "content": "Signs up connected accounts to retrieve PDF statements issued by their financial institution.",
+              "type": "text/plain"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/GetStatements",
+              "path": ["GetStatements"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "flinks-auth-key",
+                "value": "{{authorizeToken}}"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"RequestId\": \"{{requestId}}\",\n  \"NumberOfStatements\": \"Months3\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "event": []
+    },
+    {
+      "name": "Identity",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "name": "Verify applicant fields against the connected account holder.",
+          "request": {
+            "name": "Verify applicant fields against the connected account holder.",
+            "description": {
+              "content": "Compares supplied applicant identity fields against the identity captured on the connected bank account.",
+              "type": "text/plain"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/FieldMatch",
+              "path": ["FieldMatch"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "flinks-auth-key",
+                "value": "{{authorizeToken}}"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"RequestId\": \"{{requestId}}\",\n  \"Name\": \"Jane Doe\",\n  \"Email\": \"jane@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "event": []
+    },
+    {
+      "name": "Enrich",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "name": "Return categorized transactional data.",
+          "request": {
+            "name": "Return categorized transactional data.",
+            "description": {
+              "content": "Returns categorized transactional data derived from the aggregated account.",
+              "type": "text/plain"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/GetCategorization",
+              "path": ["GetCategorization"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "flinks-auth-key",
+                "value": "{{authorizeToken}}"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"RequestId\": \"{{requestId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "event": []
+    },
+    {
+      "name": "Score",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "name": "Standardized income verification attributes.",
+          "request": {
+            "name": "Standardized income verification attributes.",
+            "description": {
+              "content": "Returns total, employment, and government income for standardized income verification.",
+              "type": "text/plain"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/GetIncomeAttributes",
+              "path": ["GetIncomeAttributes"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "flinks-auth-key",
+                "value": "{{authorizeToken}}"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"RequestId\": \"{{requestId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Credit risk and income attributes.",
+          "request": {
+            "name": "Credit risk and income attributes.",
+            "description": {
+              "content": "Returns income sources, loan and bill payments, and additional risk analysis measures.",
+              "type": "text/plain"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/GetCreditRiskAttributes",
+              "path": ["GetCreditRiskAttributes"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "flinks-auth-key",
+                "value": "{{authorizeToken}}"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"RequestId\": \"{{requestId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "event": []
+    },
+    {
+      "name": "Fraud",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "name": "Process externally supplied bank statement / transaction data.",
+          "request": {
+            "name": "Process externally supplied bank statement / transaction data.",
+            "description": {
+              "content": "Ingests external bank statement / transaction documents for processing.",
+              "type": "text/plain"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/Upload",
+              "path": ["Upload"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "flinks-auth-key",
+                "value": "{{authorizeToken}}"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Run fraud analysis on uploaded documents.",
+          "request": {
+            "name": "Run fraud analysis on uploaded documents.",
+            "description": {
+              "content": "Surfaces tampering and fraud signals from an uploaded document set.",
+              "type": "text/plain"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/FraudAnalysis",
+              "path": ["FraudAnalysis"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "flinks-auth-key",
+                "value": "{{authorizeToken}}"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"RequestId\": \"{{requestId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://toolbox-api.private.fin.ag/v3/00000000-0000-0000-0000-000000000000/BankingServices",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "flinks-auth-key"
+      },
+      {
+        "key": "value",
+        "value": "{{authorizeToken}}"
+      },
+      {
+        "key": "in",
+        "value": "header"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "b7f3c2a1-9d4e-4c8b-a1f2-3e5d6c7b8a90",
+    "name": "Flinks API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Representative specification of the Flinks financial data API.\n\nContact Support:\n Name: Flinks Support\n URL: https://help.flinks.com/",
+      "type": "text/plain"
+    }
+  }
+}

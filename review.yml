@@ -1,0 +1,75 @@
+aid: flinks
+name: Flinks
+review:
+  question: Does Flinks expose a documented public WebSocket API?
+  answer: false
+  date: '2026-07-01'
+  reviewer: API Evangelist
+  asyncapiSpecCreated: false
+  asyncapiScopeNote: |
+    No AsyncAPI document was authored. Flinks exposes only HTTP (REST) surfaces.
+    Its asynchronous data retrieval is handled with an HTTP 202 + polling
+    pattern (GetAccountsDetailAsync / GetAccountsSummaryAsync), not an
+    event-driven, streaming, SSE, or WebSocket transport, so there is no
+    message-driven surface to model under the API Evangelist AsyncAPI scope.
+findings:
+  summary: |
+    Flinks does not publish a documented public WebSocket API. The Flinks
+    platform is a request/response HTTP (REST) API served from per-customer
+    instance hosts under https://{instance}-api.private.fin.ag/v3/{customerId}.
+    Long-running aggregation calls are handled by returning HTTP 202 and having
+    the client poll a matching Async endpoint (for example
+    /GetAccountsDetailAsync) with the same RequestId every ~10 seconds until an
+    HTTP 200 is returned. This polling model is not WebSocket, SSE, or any
+    bidirectional streaming transport. No ws:// or wss:// endpoint is documented
+    for authorization, account data, statements, enrichment, scoring, or fraud.
+  transports:
+    - protocol: REST
+      scheme: https
+      baseURL: https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices
+      documented: true
+    - protocol: Polling
+      scheme: https
+      note: Async data calls return HTTP 202 and are polled via *Async endpoints. Not WebSocket or SSE.
+      documented: true
+    - protocol: WebSocket
+      scheme: wss
+      documented: false
+      note: No WebSocket endpoint is documented anywhere in the Flinks API reference as of the review date.
+  endpointsConfirmedRest:
+    - POST /v3/{customerId}/BankingServices/GenerateAuthorizeToken
+    - POST /v3/{customerId}/BankingServices/Authorize
+    - POST /v3/{customerId}/BankingServices/GetAccountsDetail
+    - GET  /v3/{customerId}/BankingServices/GetAccountsDetailAsync/{requestId}
+    - POST /v3/{customerId}/BankingServices/GetAccountsSummary
+    - GET  /v3/{customerId}/BankingServices/GetAccountsSummaryAsync/{requestId}
+    - POST /v3/{customerId}/BankingServices/GetStatements
+    - POST /v3/{customerId}/BankingServices/FieldMatch
+    - POST /v3/{customerId}/BankingServices/GetCategorization
+    - POST /v3/{customerId}/BankingServices/GetIncomeAttributes
+    - POST /v3/{customerId}/BankingServices/GetCreditRiskAttributes
+    - POST /v3/{customerId}/BankingServices/Upload
+    - POST /v3/{customerId}/BankingServices/FraudAnalysis
+sources:
+  - url: https://docs.flinks.com/
+    type: Documentation
+    note: Overview and product guides describe HTTP REST endpoints only; no WebSocket mentioned.
+  - url: https://docs.flinks.com/api/authorize/endpoints/authorize
+    type: APIReference
+    note: /Authorize is an HTTP POST with a 203 MFA challenge / 200 success flow; not WebSocket.
+  - url: https://docs.flinks.com/reference/step-3-calling-for-pending-data
+    type: Documentation
+    note: Pending data is retrieved by polling the Async endpoint on HTTP 202, not by a streaming socket.
+ownershipNote: |
+  Flinks was acquired by National Bank of Canada in 2021 and operates as a
+  wholly owned subsidiary. This does not change its public API surface, which
+  remains the Flinks-branded HTTP REST platform documented at docs.flinks.com.
+actions:
+  asyncapiPath: null
+  apisYmlUpdated: true
+  reason: |
+    No WebSocket or event-driven protocol surface exists. Flinks' asynchronous
+    behavior is HTTP 202 polling, which is out of scope for AsyncAPI modeling,
+    so no AsyncAPI document was created. The apis.yml captures the REST surfaces
+    (Authorize/Connect, Accounts Detail, Accounts Summary, Statements, Identity,
+    Attributes/Analytics, Score, Fraud/KYC) with an OpenAPI representation.
