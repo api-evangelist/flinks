@@ -1,0 +1,16 @@
+generated: '2026-07-11'
+method: derived
+source: openapi/flinks-openapi.yml
+summary:
+  types:
+  - apiKey
+  api_key_in:
+  - header
+schemes:
+- name: flinks_auth_key
+  type: apiKey
+  in: header
+  parameter: flinks-auth-key
+  description: Short-lived (30-minute) authorize token obtained from /GenerateAuthorizeToken.
+  sources:
+  - openapi/flinks-openapi.yml

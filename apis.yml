@@ -208,6 +208,14 @@ apis:
     via /Upload and runs /FraudAnalysis to surface tampering and fraud signals,
     complementing the live-aggregation KYC data returned on connected accounts.
 common:
+- type: TrustCenter
+  url: security/flinks-trust-center.yml
+- type: VulnerabilityDisclosure
+  url: security/flinks-vulnerability-disclosure.yml
+- type: DomainSecurity
+  url: security/flinks-domain-security.yml
+- type: Authentication
+  url: authentication/flinks-authentication.yml
 - type: LinkedIn
   url: https://www.linkedin.com/company/flinks
 - type: Website
@@ -220,6 +228,8 @@ common:
   url: rate-limits/flinks-rate-limits.yml
 - type: FinOps
   url: finops/flinks-finops.yml
+- url: https://flinks.com/blog/
+  type: Blog
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
