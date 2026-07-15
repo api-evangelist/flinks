@@ -208,6 +208,8 @@ apis:
     via /Upload and runs /FraudAnalysis to surface tampering and fraud signals,
     complementing the live-aggregation KYC data returned on connected accounts.
 common:
+- type: AgenticAccess
+  url: agentic-access/flinks-agentic-access.yml
 - type: TrustCenter
   url: security/flinks-trust-center.yml
 - type: VulnerabilityDisclosure
