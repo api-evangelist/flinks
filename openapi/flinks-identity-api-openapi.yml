@@ -1,0 +1,87 @@
+openapi: 3.0.1
+info:
+  title: Flinks Authorize Identity API
+  description: Representative specification of the Flinks financial data API. Businesses connect to consumer and business bank accounts to aggregate account, transaction, and statement data, verify identity, and derive income, credit-risk, and fraud analytics. A session is opened with the multi-step /Authorize (MFA) endpoint using a LoginId returned by Flinks Connect; the resulting RequestId is passed to subsequent data, enrichment, and analytics endpoints. All calls are authenticated with a short-lived authorize token supplied in the flinks-auth-key header.
+  termsOfService: https://flinks.com/terms-of-service/
+  contact:
+    name: Flinks Support
+    url: https://help.flinks.com/
+  version: '3.0'
+servers:
+- url: https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices
+  description: Flinks per-customer instance host.
+  variables:
+    instance:
+      default: toolbox
+      description: Assigned instance / environment prefix (e.g. toolbox for sandbox).
+    customerId:
+      default: 00000000-0000-0000-0000-000000000000
+      description: Your Flinks customer identifier (GUID).
+security:
+- flinks_auth_key: []
+tags:
+- name: Identity
+paths:
+  /FieldMatch:
+    post:
+      operationId: fieldMatch
+      tags:
+      - Identity
+      summary: Verify applicant fields against the connected account holder.
+      description: Compares supplied applicant identity fields (name, address, phone, email) against the identity captured on the connected bank account and returns per-field match results.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FieldMatchRequest'
+      responses:
+        '200':
+          description: Field match results returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldMatchResponse'
+components:
+  schemas:
+    FieldMatchResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldMatchResult'
+    FieldMatchResult:
+      type: object
+      properties:
+        Field:
+          type: string
+        Matched:
+          type: boolean
+        Score:
+          type: number
+    FieldMatchRequest:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Name:
+          type: string
+        Address:
+          type: string
+        Email:
+          type: string
+        PhoneNumber:
+          type: string
+      required:
+      - RequestId
+  securitySchemes:
+    flinks_auth_key:
+      type: apiKey
+      in: header
+      name: flinks-auth-key
+      description: Short-lived (30-minute) authorize token obtained from /GenerateAuthorizeToken.
