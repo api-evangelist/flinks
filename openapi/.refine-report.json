@@ -1,0 +1,24 @@
+{
+  "provider": "flinks",
+  "sources": [
+    "flinks-authorize-api-openapi.yml",
+    "flinks-connect-api-openapi.yml",
+    "flinks-enrich-api-openapi.yml",
+    "flinks-fraud-api-openapi.yml",
+    "flinks-identity-api-openapi.yml",
+    "flinks-score-api-openapi.yml"
+  ],
+  "outputs": [
+    "flinks-authorize-api-openapi.yml",
+    "flinks-connect-api-openapi.yml",
+    "flinks-enrich-api-openapi.yml",
+    "flinks-fraud-api-openapi.yml",
+    "flinks-identity-api-openapi.yml",
+    "flinks-score-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [],
+  "skipped": []
+}
