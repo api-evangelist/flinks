@@ -1,0 +1,105 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Flinks Authorize Connect API",
+    "version": "3.0"
+  },
+  "request": {
+    "auth": {
+      "type": "apikey",
+      "key": "flinks-auth-key",
+      "value": "{{flinks-auth-key}}",
+      "placement": "header"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Connect",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Open a banking session and handle MFA.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices/Authorize",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Opens a session for a Flinks Connect LoginId. Returns HTTP 200 with a RequestId and Links on success, or HTTP 203 with SecurityChallenges when a multi-factor challenge is required. Resubmit with RequestId and SecurityResponses to complete the challenge."
+        },
+        {
+          "info": {
+            "name": "Retrieve full account detail and transactions.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices/GetAccountsDetail",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Returns full detail for each linked account - identity, balances, up to 90 or 365 days of transactions, and holder KYC. May return HTTP 202; poll /GetAccountsDetailAsync with the same RequestId until HTTP 200."
+        },
+        {
+          "info": {
+            "name": "Poll a pending accounts-detail request.",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices/GetAccountsDetailAsync/:requestId",
+            "params": [
+              {
+                "name": "requestId",
+                "value": "",
+                "type": "path",
+                "description": "The RequestId returned by /Authorize."
+              }
+            ]
+          },
+          "docs": "Poll a pending accounts-detail request."
+        },
+        {
+          "info": {
+            "name": "Retrieve general account summary information.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices/GetAccountsSummary",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Returns cardholder name (when available), balance, category, and EFT eligibility for each linked account, without full transaction history."
+        },
+        {
+          "info": {
+            "name": "Retrieve PDF bank statements.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices/GetStatements",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Signs up one or more connected accounts to retrieve PDF statements issued by their financial institution."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

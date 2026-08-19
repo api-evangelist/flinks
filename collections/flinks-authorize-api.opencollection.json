@@ -1,0 +1,41 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Flinks Authorize API",
+    "version": "3.0"
+  },
+  "request": {
+    "auth": {
+      "type": "apikey",
+      "key": "flinks-auth-key",
+      "value": "{{flinks-auth-key}}",
+      "placement": "header"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Authorize",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Generate a short-lived authorize token.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices/GenerateAuthorizeToken",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Exchanges your API secret for a 30-minute authorize token that must be supplied in the flinks-auth-key header on all other endpoints."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,189 @@
+{
+  "item": [
+    {
+      "id": "3f8e230c-a478-4f9d-80b8-d226b8417dd5",
+      "name": "Enrich",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "87f06748-be79-49be-b18c-c5a4e6bbabfd",
+          "name": "Return categorized transactional data.",
+          "request": {
+            "name": "Return categorized transactional data.",
+            "description": {},
+            "url": {
+              "path": [
+                "GetCategorization"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                  "type": "any",
+                  "value": "{{instance}}",
+                  "key": "instance"
+                },
+                {
+                  "description": "Your Flinks customer identifier (GUID).",
+                  "type": "any",
+                  "value": "{{customerId}}",
+                  "key": "customerId"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"RequestId\": \"<uuid>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "41b3cf72-d608-4b5a-850f-948dd69d058a",
+              "name": "Categorized transactions returned.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "GetCategorization"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                      "type": "any",
+                      "value": "{{instance}}",
+                      "key": "instance"
+                    },
+                    {
+                      "description": "Your Flinks customer identifier (GUID).",
+                      "type": "any",
+                      "value": "{{customerId}}",
+                      "key": "customerId"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "flinks-auth-key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"RequestId\": \"<uuid>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"RequestId\": \"4ff306c9-50ae-42d8-698d-14015ef3c2bd\",\n  \"Categories\": [\n    {\n      \"Name\": \"string\",\n      \"Amount\": 4483.383244858746,\n      \"Count\": 6086\n    },\n    {\n      \"Name\": \"string\",\n      \"Amount\": 3459.461723935564,\n      \"Count\": 174\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "description": {
+        "content": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+        "type": "text/plain"
+      },
+      "type": "any",
+      "value": "toolbox",
+      "key": "instance"
+    },
+    {
+      "description": {
+        "content": "Your Flinks customer identifier (GUID).",
+        "type": "text/plain"
+      },
+      "type": "any",
+      "value": "00000000-0000-0000-0000-000000000000",
+      "key": "customerId"
+    },
+    {
+      "type": "string",
+      "value": "https://{{instance}}-api.private.fin.ag/v3/{{customerId}}/BankingServices",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "flinks-auth-key"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}"
+      },
+      {
+        "key": "in",
+        "value": "header"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "450593aa-9b50-4aef-9223-cfcb525cca3f",
+    "name": "Flinks Authorize Enrich API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Representative specification of the Flinks financial data API. Businesses connect to consumer and business bank accounts to aggregate account, transaction, and statement data, verify identity, and derive income, credit-risk, and fraud analytics. A session is opened with the multi-step /Authorize (MFA) endpoint using a LoginId returned by Flinks Connect; the resulting RequestId is passed to subsequent data, enrichment, and analytics endpoints. All calls are authenticated with a short-lived authorize token supplied in the flinks-auth-key header.\n\nContact Support:\n Name: Flinks Support",
+      "type": "text/plain"
+    }
+  }
+}

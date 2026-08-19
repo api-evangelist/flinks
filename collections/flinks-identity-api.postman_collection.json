@@ -1,0 +1,192 @@
+{
+  "item": [
+    {
+      "id": "a24b4bfc-c4a4-4709-b19c-4c5cb1d34366",
+      "name": "Identity",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "e23865c4-c668-4591-88d2-17a558e149d6",
+          "name": "Verify applicant fields against the connected account holder.",
+          "request": {
+            "name": "Verify applicant fields against the connected account holder.",
+            "description": {
+              "content": "Compares supplied applicant identity fields (name, address, phone, email) against the identity captured on the connected bank account and returns per-field match results.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "FieldMatch"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                  "type": "any",
+                  "value": "{{instance}}",
+                  "key": "instance"
+                },
+                {
+                  "description": "Your Flinks customer identifier (GUID).",
+                  "type": "any",
+                  "value": "{{customerId}}",
+                  "key": "customerId"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"RequestId\": \"<uuid>\",\n  \"Name\": \"<string>\",\n  \"Address\": \"<string>\",\n  \"Email\": \"<string>\",\n  \"PhoneNumber\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "5445c488-dddf-4107-86ab-6a7901162f0f",
+              "name": "Field match results returned.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "FieldMatch"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                      "type": "any",
+                      "value": "{{instance}}",
+                      "key": "instance"
+                    },
+                    {
+                      "description": "Your Flinks customer identifier (GUID).",
+                      "type": "any",
+                      "value": "{{customerId}}",
+                      "key": "customerId"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "flinks-auth-key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"RequestId\": \"<uuid>\",\n  \"Name\": \"<string>\",\n  \"Address\": \"<string>\",\n  \"Email\": \"<string>\",\n  \"PhoneNumber\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"RequestId\": \"20a50012-53db-7639-56d7-9d102ea9a730\",\n  \"Results\": [\n    {\n      \"Field\": \"string\",\n      \"Matched\": false,\n      \"Score\": 7391.915428519612\n    },\n    {\n      \"Field\": \"string\",\n      \"Matched\": true,\n      \"Score\": 7082.215844806342\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "description": {
+        "content": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+        "type": "text/plain"
+      },
+      "type": "any",
+      "value": "toolbox",
+      "key": "instance"
+    },
+    {
+      "description": {
+        "content": "Your Flinks customer identifier (GUID).",
+        "type": "text/plain"
+      },
+      "type": "any",
+      "value": "00000000-0000-0000-0000-000000000000",
+      "key": "customerId"
+    },
+    {
+      "type": "string",
+      "value": "https://{{instance}}-api.private.fin.ag/v3/{{customerId}}/BankingServices",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "flinks-auth-key"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}"
+      },
+      {
+        "key": "in",
+        "value": "header"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "3cadbefa-7c60-4463-a558-5e1429829ec8",
+    "name": "Flinks Authorize Identity API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Representative specification of the Flinks financial data API. Businesses connect to consumer and business bank accounts to aggregate account, transaction, and statement data, verify identity, and derive income, credit-risk, and fraud analytics. A session is opened with the multi-step /Authorize (MFA) endpoint using a LoginId returned by Flinks Connect; the resulting RequestId is passed to subsequent data, enrichment, and analytics endpoints. All calls are authenticated with a short-lived authorize token supplied in the flinks-auth-key header.\n\nContact Support:\n Name: Flinks Support",
+      "type": "text/plain"
+    }
+  }
+}

@@ -1,0 +1,1068 @@
+{
+  "item": [
+    {
+      "id": "c677091c-dfe6-4d66-8d85-a48c05ec1064",
+      "name": "Connect",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "ef7ad26c-4292-47f9-a556-e1352c59498a",
+          "name": "Open a banking session and handle MFA.",
+          "request": {
+            "name": "Open a banking session and handle MFA.",
+            "description": {
+              "content": "Opens a session for a Flinks Connect LoginId. Returns HTTP 200 with a RequestId and Links on success, or HTTP 203 with SecurityChallenges when a multi-factor challenge is required. Resubmit with RequestId and SecurityResponses to complete the challenge.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "Authorize"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                  "type": "any",
+                  "value": "{{instance}}",
+                  "key": "instance"
+                },
+                {
+                  "description": "Your Flinks customer identifier (GUID).",
+                  "type": "any",
+                  "value": "{{customerId}}",
+                  "key": "customerId"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"LoginId\": \"<uuid>\",\n  \"MostRecentCached\": true,\n  \"Language\": \"en\",\n  \"Save\": true,\n  \"Tag\": \"<string>\",\n  \"RequestId\": \"<uuid>\",\n  \"SecurityResponses\": {\n    \"key_0\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "25eab75f-0e0c-422c-9fa3-9fc6037b910d",
+              "name": "Authorization successful; session is ready for data calls.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "Authorize"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                      "type": "any",
+                      "value": "{{instance}}",
+                      "key": "instance"
+                    },
+                    {
+                      "description": "Your Flinks customer identifier (GUID).",
+                      "type": "any",
+                      "value": "{{customerId}}",
+                      "key": "customerId"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "flinks-auth-key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"LoginId\": \"<uuid>\",\n  \"MostRecentCached\": true,\n  \"Language\": \"en\",\n  \"Save\": true,\n  \"Tag\": \"<string>\",\n  \"RequestId\": \"<uuid>\",\n  \"SecurityResponses\": {\n    \"key_0\": [\n      \"<string>\",\n      \"<string>\"\n    ],\n    \"key_1\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"RequestId\": \"16852845-e281-bb6d-55da-037f0cbccfc0\",\n  \"Institution\": \"string\",\n  \"InstitutionId\": \"string\",\n  \"Login\": {},\n  \"Links\": [\n    {\n      \"rel\": \"string\",\n      \"href\": \"string\",\n      \"method\": \"string\"\n    },\n    {\n      \"rel\": \"string\",\n      \"href\": \"string\",\n      \"method\": \"string\"\n    }\n  ],\n  \"HttpStatusCode\": 200\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f66f996a-cb97-4c8d-bbb4-b69522cc5c7d",
+              "name": "Multi-factor authentication required.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "Authorize"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                      "type": "any",
+                      "value": "{{instance}}",
+                      "key": "instance"
+                    },
+                    {
+                      "description": "Your Flinks customer identifier (GUID).",
+                      "type": "any",
+                      "value": "{{customerId}}",
+                      "key": "customerId"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "flinks-auth-key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"LoginId\": \"<uuid>\",\n  \"MostRecentCached\": true,\n  \"Language\": \"en\",\n  \"Save\": true,\n  \"Tag\": \"<string>\",\n  \"RequestId\": \"<uuid>\",\n  \"SecurityResponses\": {\n    \"key_0\": [\n      \"<string>\",\n      \"<string>\"\n    ],\n    \"key_1\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Non-Authoritative Information (since HTTP/1.1)",
+              "code": 203,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"RequestId\": \"3fdeb3da-5733-65be-c903-f07fcf816135\",\n  \"SecurityChallenges\": [\n    {\n      \"Type\": \"string\",\n      \"Iterables\": [\n        \"string\",\n        \"string\"\n      ],\n      \"Prompt\": \"string\"\n    },\n    {\n      \"Type\": \"string\",\n      \"Iterables\": [\n        \"string\",\n        \"string\"\n      ],\n      \"Prompt\": \"string\"\n    }\n  ],\n  \"HttpStatusCode\": 203\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4494b7fe-0576-484d-9091-605d87b4e954",
+              "name": "Invalid parameters.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "Authorize"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                      "type": "any",
+                      "value": "{{instance}}",
+                      "key": "instance"
+                    },
+                    {
+                      "description": "Your Flinks customer identifier (GUID).",
+                      "type": "any",
+                      "value": "{{customerId}}",
+                      "key": "customerId"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "flinks-auth-key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"LoginId\": \"<uuid>\",\n  \"MostRecentCached\": true,\n  \"Language\": \"en\",\n  \"Save\": true,\n  \"Tag\": \"<string>\",\n  \"RequestId\": \"<uuid>\",\n  \"SecurityResponses\": {\n    \"key_0\": [\n      \"<string>\",\n      \"<string>\"\n    ],\n    \"key_1\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"HttpStatusCode\": 6654,\n  \"Message\": \"string\",\n  \"FlinksCode\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0c8705ef-9674-4262-9cdb-90ec37d2c953",
+              "name": "Authentication failed.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "Authorize"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                      "type": "any",
+                      "value": "{{instance}}",
+                      "key": "instance"
+                    },
+                    {
+                      "description": "Your Flinks customer identifier (GUID).",
+                      "type": "any",
+                      "value": "{{customerId}}",
+                      "key": "customerId"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "flinks-auth-key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"LoginId\": \"<uuid>\",\n  \"MostRecentCached\": true,\n  \"Language\": \"en\",\n  \"Save\": true,\n  \"Tag\": \"<string>\",\n  \"RequestId\": \"<uuid>\",\n  \"SecurityResponses\": {\n    \"key_0\": [\n      \"<string>\",\n      \"<string>\"\n    ],\n    \"key_1\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"HttpStatusCode\": 6654,\n  \"Message\": \"string\",\n  \"FlinksCode\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "882bb343-edbe-4876-b030-1d8570d603c4",
+          "name": "Retrieve full account detail and transactions.",
+          "request": {
+            "name": "Retrieve full account detail and transactions.",
+            "description": {
+              "content": "Returns full detail for each linked account - identity, balances, up to 90 or 365 days of transactions, and holder KYC. May return HTTP 202; poll /GetAccountsDetailAsync with the same RequestId until HTTP 200.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "GetAccountsDetail"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                  "type": "any",
+                  "value": "{{instance}}",
+                  "key": "instance"
+                },
+                {
+                  "description": "Your Flinks customer identifier (GUID).",
+                  "type": "any",
+                  "value": "{{customerId}}",
+                  "key": "customerId"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"RequestId\": \"<uuid>\",\n  \"WithAccountIdentity\": true,\n  \"WithKYC\": true,\n  \"WithTransactions\": true,\n  \"DaysOfTransactions\": \"<string>\",\n  \"AccountsFilter\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"WithDetailsAndBankingStatements\": \"<boolean>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "3763b385-29c5-4649-9e08-4d5a36edf25b",
+              "name": "Account detail returned.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "GetAccountsDetail"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                      "type": "any",
+                      "value": "{{instance}}",
+                      "key": "instance"
+                    },
+                    {
+                      "description": "Your Flinks customer identifier (GUID).",
+                      "type": "any",
+                      "value": "{{customerId}}",
+                      "key": "customerId"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "flinks-auth-key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"RequestId\": \"<uuid>\",\n  \"WithAccountIdentity\": true,\n  \"WithKYC\": true,\n  \"WithTransactions\": true,\n  \"DaysOfTransactions\": \"<string>\",\n  \"AccountsFilter\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"WithDetailsAndBankingStatements\": \"<boolean>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"RequestId\": \"191337a6-8f0b-802e-36e9-dc420b025663\",\n  \"Accounts\": [\n    {\n      \"Id\": \"string\",\n      \"Title\": \"string\",\n      \"AccountNumber\": \"string\",\n      \"LastFourDigits\": \"string\",\n      \"TransitNumber\": \"string\",\n      \"InstitutionNumber\": \"string\",\n      \"Category\": \"string\",\n      \"Type\": \"string\",\n      \"Currency\": \"string\",\n      \"Balance\": {\n        \"Available\": 8607.354871753672,\n        \"Current\": 9000.36239573862,\n        \"Limit\": 4696.698573813051\n      },\n      \"Transactions\": [\n        {\n          \"Date\": \"2011-12-03\",\n          \"Description\": \"string\",\n          \"Debit\": 1114.435767257178,\n          \"Credit\": 548.5958896202559,\n          \"Balance\": 6216.915596577312\n        },\n        {\n          \"Date\": \"1970-01-16\",\n          \"Description\": \"string\",\n          \"Debit\": 2740.17549009145,\n          \"Credit\": 5547.497015875292,\n          \"Balance\": 2680.299047434829\n        }\n      ],\n      \"Holder\": {\n        \"Name\": \"string\",\n        \"Address\": {\n          \"CivicAddress\": \"string\",\n          \"City\": \"string\",\n          \"Province\": \"string\",\n          \"PostalCode\": \"string\",\n          \"Country\": \"string\"\n        },\n        \"Email\": \"string\",\n        \"PhoneNumber\": \"string\"\n      }\n    },\n    {\n      \"Id\": \"string\",\n      \"Title\": \"string\",\n      \"AccountNumber\": \"string\",\n      \"LastFourDigits\": \"string\",\n      \"TransitNumber\": \"string\",\n      \"InstitutionNumber\": \"string\",\n      \"Category\": \"string\",\n      \"Type\": \"string\",\n      \"Currency\": \"string\",\n      \"Balance\": {\n        \"Available\": 6958.507504851541,\n        \"Current\": 6903.44741509887,\n        \"Limit\": 2230.6004436245653\n      },\n      \"Transactions\": [\n        {\n          \"Date\": \"1951-07-12\",\n          \"Description\": \"string\",\n          \"Debit\": 1385.7404748901524,\n          \"Credit\": 3559.9905627094263,\n          \"Balance\": 6696.682121481937\n        },\n        {\n          \"Date\": \"2015-04-12\",\n          \"Description\": \"string\",\n          \"Debit\": 7658.0149084334325,\n          \"Credit\": 9630.365472988351,\n          \"Balance\": 7447.185882433517\n        }\n      ],\n      \"Holder\": {\n        \"Name\": \"string\",\n        \"Address\": {\n          \"CivicAddress\": \"string\",\n          \"City\": \"string\",\n          \"Province\": \"string\",\n          \"PostalCode\": \"string\",\n          \"Country\": \"string\"\n        },\n        \"Email\": \"string\",\n        \"PhoneNumber\": \"string\"\n      }\n    }\n  ],\n  \"Institution\": \"string\",\n  \"HttpStatusCode\": 200\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "67bfd9cb-6bf9-4524-bc4a-8f2d0e0a785f",
+              "name": "Request accepted and processing; poll the async endpoint.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "GetAccountsDetail"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                      "type": "any",
+                      "value": "{{instance}}",
+                      "key": "instance"
+                    },
+                    {
+                      "description": "Your Flinks customer identifier (GUID).",
+                      "type": "any",
+                      "value": "{{customerId}}",
+                      "key": "customerId"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "flinks-auth-key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"RequestId\": \"<uuid>\",\n  \"WithAccountIdentity\": true,\n  \"WithKYC\": true,\n  \"WithTransactions\": true,\n  \"DaysOfTransactions\": \"<string>\",\n  \"AccountsFilter\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"WithDetailsAndBankingStatements\": \"<boolean>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Accepted",
+              "code": 202,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"RequestId\": \"05c731ae-c1fd-cc86-833d-c02373cbff4d\",\n  \"HttpStatusCode\": 202,\n  \"Message\": \"Operation is pending; poll the async endpoint.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "b84473aa-de92-4f8d-a87e-0e40b50daa74",
+          "name": "Poll a pending accounts-detail request.",
+          "request": {
+            "name": "Poll a pending accounts-detail request.",
+            "description": {},
+            "url": {
+              "path": [
+                "GetAccountsDetailAsync",
+                ":requestId"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<uuid>",
+                  "key": "requestId",
+                  "description": "(Required) The RequestId returned by /Authorize."
+                },
+                {
+                  "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                  "type": "any",
+                  "value": "{{instance}}",
+                  "key": "instance"
+                },
+                {
+                  "description": "Your Flinks customer identifier (GUID).",
+                  "type": "any",
+                  "value": "{{customerId}}",
+                  "key": "customerId"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "f02e820f-469a-403e-bde9-11c0d4487149",
+              "name": "Account detail returned.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "GetAccountsDetailAsync",
+                    ":requestId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "requestId",
+                      "description": "(Required) The RequestId returned by /Authorize."
+                    },
+                    {
+                      "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                      "type": "any",
+                      "value": "{{instance}}",
+                      "key": "instance"
+                    },
+                    {
+                      "description": "Your Flinks customer identifier (GUID).",
+                      "type": "any",
+                      "value": "{{customerId}}",
+                      "key": "customerId"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "flinks-auth-key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"RequestId\": \"f2321e56-e59c-99ba-9fa0-c7dfdf111bf7\",\n  \"Accounts\": [\n    {\n      \"Id\": \"string\",\n      \"Title\": \"string\",\n      \"AccountNumber\": \"string\",\n      \"LastFourDigits\": \"string\",\n      \"TransitNumber\": \"string\",\n      \"InstitutionNumber\": \"string\",\n      \"Category\": \"string\",\n      \"Type\": \"string\",\n      \"Currency\": \"string\",\n      \"Balance\": {\n        \"Available\": 2685.451021703933,\n        \"Current\": 6909.049738812611,\n        \"Limit\": 3206.755825394413\n      },\n      \"Transactions\": [\n        {\n          \"Date\": \"2004-07-24\",\n          \"Description\": \"string\",\n          \"Debit\": 522.106819470468,\n          \"Credit\": 8907.354954480796,\n          \"Balance\": 4128.375345148687\n        },\n        {\n          \"Date\": \"1983-04-22\",\n          \"Description\": \"string\",\n          \"Debit\": 8649.288656397512,\n          \"Credit\": 3136.27875916337,\n          \"Balance\": 2320.9802870904696\n        }\n      ],\n      \"Holder\": {\n        \"Name\": \"string\",\n        \"Address\": {\n          \"CivicAddress\": \"string\",\n          \"City\": \"string\",\n          \"Province\": \"string\",\n          \"PostalCode\": \"string\",\n          \"Country\": \"string\"\n        },\n        \"Email\": \"string\",\n        \"PhoneNumber\": \"string\"\n      }\n    },\n    {\n      \"Id\": \"string\",\n      \"Title\": \"string\",\n      \"AccountNumber\": \"string\",\n      \"LastFourDigits\": \"string\",\n      \"TransitNumber\": \"string\",\n      \"InstitutionNumber\": \"string\",\n      \"Category\": \"string\",\n      \"Type\": \"string\",\n      \"Currency\": \"string\",\n      \"Balance\": {\n        \"Available\": 3833.5552035449496,\n        \"Current\": 8846.79595953982,\n        \"Limit\": 183.84640846040412\n      },\n      \"Transactions\": [\n        {\n          \"Date\": \"1968-01-27\",\n          \"Description\": \"string\",\n          \"Debit\": 6287.508338911593,\n          \"Credit\": 8329.768069837946,\n          \"Balance\": 4946.869342813489\n        },\n        {\n          \"Date\": \"1997-04-13\",\n          \"Description\": \"string\",\n          \"Debit\": 9811.72118753005,\n          \"Credit\": 3914.5744643897274,\n          \"Balance\": 3416.976437754847\n        }\n      ],\n      \"Holder\": {\n        \"Name\": \"string\",\n        \"Address\": {\n          \"CivicAddress\": \"string\",\n          \"City\": \"string\",\n          \"Province\": \"string\",\n          \"PostalCode\": \"string\",\n          \"Country\": \"string\"\n        },\n        \"Email\": \"string\",\n        \"PhoneNumber\": \"string\"\n      }\n    }\n  ],\n  \"Institution\": \"string\",\n  \"HttpStatusCode\": 200\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4e3c0b4a-59c0-4975-9548-b5bc6f392cd9",
+              "name": "Still processing.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "GetAccountsDetailAsync",
+                    ":requestId"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "requestId",
+                      "description": "(Required) The RequestId returned by /Authorize."
+                    },
+                    {
+                      "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                      "type": "any",
+                      "value": "{{instance}}",
+                      "key": "instance"
+                    },
+                    {
+                      "description": "Your Flinks customer identifier (GUID).",
+                      "type": "any",
+                      "value": "{{customerId}}",
+                      "key": "customerId"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "flinks-auth-key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Accepted",
+              "code": 202,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"RequestId\": \"05c731ae-c1fd-cc86-833d-c02373cbff4d\",\n  \"HttpStatusCode\": 202,\n  \"Message\": \"Operation is pending; poll the async endpoint.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "2425679d-c1a6-4a34-8db2-d6ec6eba3a73",
+          "name": "Retrieve general account summary information.",
+          "request": {
+            "name": "Retrieve general account summary information.",
+            "description": {
+              "content": "Returns cardholder name (when available), balance, category, and EFT eligibility for each linked account, without full transaction history.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "GetAccountsSummary"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                  "type": "any",
+                  "value": "{{instance}}",
+                  "key": "instance"
+                },
+                {
+                  "description": "Your Flinks customer identifier (GUID).",
+                  "type": "any",
+                  "value": "{{customerId}}",
+                  "key": "customerId"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"RequestId\": \"<uuid>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "38a45fc8-0419-4a50-be84-e9bb9e272398",
+              "name": "Account summary returned.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "GetAccountsSummary"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                      "type": "any",
+                      "value": "{{instance}}",
+                      "key": "instance"
+                    },
+                    {
+                      "description": "Your Flinks customer identifier (GUID).",
+                      "type": "any",
+                      "value": "{{customerId}}",
+                      "key": "customerId"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "flinks-auth-key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"RequestId\": \"<uuid>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"RequestId\": \"f2321e56-e59c-99ba-9fa0-c7dfdf111bf7\",\n  \"Accounts\": [\n    {\n      \"Id\": \"string\",\n      \"Title\": \"string\",\n      \"AccountNumber\": \"string\",\n      \"LastFourDigits\": \"string\",\n      \"TransitNumber\": \"string\",\n      \"InstitutionNumber\": \"string\",\n      \"Category\": \"string\",\n      \"Type\": \"string\",\n      \"Currency\": \"string\",\n      \"Balance\": {\n        \"Available\": 2685.451021703933,\n        \"Current\": 6909.049738812611,\n        \"Limit\": 3206.755825394413\n      },\n      \"Transactions\": [\n        {\n          \"Date\": \"2004-07-24\",\n          \"Description\": \"string\",\n          \"Debit\": 522.106819470468,\n          \"Credit\": 8907.354954480796,\n          \"Balance\": 4128.375345148687\n        },\n        {\n          \"Date\": \"1983-04-22\",\n          \"Description\": \"string\",\n          \"Debit\": 8649.288656397512,\n          \"Credit\": 3136.27875916337,\n          \"Balance\": 2320.9802870904696\n        }\n      ],\n      \"Holder\": {\n        \"Name\": \"string\",\n        \"Address\": {\n          \"CivicAddress\": \"string\",\n          \"City\": \"string\",\n          \"Province\": \"string\",\n          \"PostalCode\": \"string\",\n          \"Country\": \"string\"\n        },\n        \"Email\": \"string\",\n        \"PhoneNumber\": \"string\"\n      }\n    },\n    {\n      \"Id\": \"string\",\n      \"Title\": \"string\",\n      \"AccountNumber\": \"string\",\n      \"LastFourDigits\": \"string\",\n      \"TransitNumber\": \"string\",\n      \"InstitutionNumber\": \"string\",\n      \"Category\": \"string\",\n      \"Type\": \"string\",\n      \"Currency\": \"string\",\n      \"Balance\": {\n        \"Available\": 3833.5552035449496,\n        \"Current\": 8846.79595953982,\n        \"Limit\": 183.84640846040412\n      },\n      \"Transactions\": [\n        {\n          \"Date\": \"1968-01-27\",\n          \"Description\": \"string\",\n          \"Debit\": 6287.508338911593,\n          \"Credit\": 8329.768069837946,\n          \"Balance\": 4946.869342813489\n        },\n        {\n          \"Date\": \"1997-04-13\",\n          \"Description\": \"string\",\n          \"Debit\": 9811.72118753005,\n          \"Credit\": 3914.5744643897274,\n          \"Balance\": 3416.976437754847\n        }\n      ],\n      \"Holder\": {\n        \"Name\": \"string\",\n        \"Address\": {\n          \"CivicAddress\": \"string\",\n          \"City\": \"string\",\n          \"Province\": \"string\",\n          \"PostalCode\": \"string\",\n          \"Country\": \"string\"\n        },\n        \"Email\": \"string\",\n        \"PhoneNumber\": \"string\"\n      }\n    }\n  ],\n  \"Institution\": \"string\",\n  \"HttpStatusCode\": 200\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "35467865-fb44-4fc7-9e28-00ba216487fe",
+              "name": "Processing; poll /GetAccountsSummaryAsync.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "GetAccountsSummary"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                      "type": "any",
+                      "value": "{{instance}}",
+                      "key": "instance"
+                    },
+                    {
+                      "description": "Your Flinks customer identifier (GUID).",
+                      "type": "any",
+                      "value": "{{customerId}}",
+                      "key": "customerId"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "flinks-auth-key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"RequestId\": \"<uuid>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Accepted",
+              "code": 202,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"RequestId\": \"05c731ae-c1fd-cc86-833d-c02373cbff4d\",\n  \"HttpStatusCode\": 202,\n  \"Message\": \"Operation is pending; poll the async endpoint.\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "2a1f2ede-2452-4faf-b14b-82d3c8d6a222",
+          "name": "Retrieve PDF bank statements.",
+          "request": {
+            "name": "Retrieve PDF bank statements.",
+            "description": {
+              "content": "Signs up one or more connected accounts to retrieve PDF statements issued by their financial institution.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "GetStatements"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                  "type": "any",
+                  "value": "{{instance}}",
+                  "key": "instance"
+                },
+                {
+                  "description": "Your Flinks customer identifier (GUID).",
+                  "type": "any",
+                  "value": "{{customerId}}",
+                  "key": "customerId"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"RequestId\": \"<uuid>\",\n  \"AccountsFilter\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"NumberOfStatements\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "b55ff67e-66de-4e4c-86eb-3c946fbbcb27",
+              "name": "Statements returned.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "GetStatements"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "description": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+                      "type": "any",
+                      "value": "{{instance}}",
+                      "key": "instance"
+                    },
+                    {
+                      "description": "Your Flinks customer identifier (GUID).",
+                      "type": "any",
+                      "value": "{{customerId}}",
+                      "key": "customerId"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "flinks-auth-key",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"RequestId\": \"<uuid>\",\n  \"AccountsFilter\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"NumberOfStatements\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"RequestId\": \"fdd07ceb-c430-04b6-c2c1-28d52a32e4e1\",\n  \"Statements\": [\n    {\n      \"AccountId\": \"string\",\n      \"FileName\": \"string\",\n      \"Base64Content\": \"string\"\n    },\n    {\n      \"AccountId\": \"string\",\n      \"FileName\": \"string\",\n      \"Base64Content\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "description": {
+        "content": "Assigned instance / environment prefix (e.g. toolbox for sandbox).",
+        "type": "text/plain"
+      },
+      "type": "any",
+      "value": "toolbox",
+      "key": "instance"
+    },
+    {
+      "description": {
+        "content": "Your Flinks customer identifier (GUID).",
+        "type": "text/plain"
+      },
+      "type": "any",
+      "value": "00000000-0000-0000-0000-000000000000",
+      "key": "customerId"
+    },
+    {
+      "type": "string",
+      "value": "https://{{instance}}-api.private.fin.ag/v3/{{customerId}}/BankingServices",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "flinks-auth-key"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}"
+      },
+      {
+        "key": "in",
+        "value": "header"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "ef238009-ee2e-4603-a7a1-32e9555a5605",
+    "name": "Flinks Authorize Connect API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Representative specification of the Flinks financial data API. Businesses connect to consumer and business bank accounts to aggregate account, transaction, and statement data, verify identity, and derive income, credit-risk, and fraud analytics. A session is opened with the multi-step /Authorize (MFA) endpoint using a LoginId returned by Flinks Connect; the resulting RequestId is passed to subsequent data, enrichment, and analytics endpoints. All calls are authenticated with a short-lived authorize token supplied in the flinks-auth-key header.\n\nContact Support:\n Name: Flinks Support",
+      "type": "text/plain"
+    }
+  }
+}

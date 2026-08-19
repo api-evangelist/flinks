@@ -1,0 +1,41 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Flinks Authorize Identity API",
+    "version": "3.0"
+  },
+  "request": {
+    "auth": {
+      "type": "apikey",
+      "key": "flinks-auth-key",
+      "value": "{{flinks-auth-key}}",
+      "placement": "header"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Identity",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Verify applicant fields against the connected account holder.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices/FieldMatch",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Compares supplied applicant identity fields (name, address, phone, email) against the identity captured on the connected bank account and returns per-field match results."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

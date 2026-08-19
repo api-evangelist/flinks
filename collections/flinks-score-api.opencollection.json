@@ -1,0 +1,56 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Flinks Authorize Score API",
+    "version": "3.0"
+  },
+  "request": {
+    "auth": {
+      "type": "apikey",
+      "key": "flinks-auth-key",
+      "value": "{{flinks-auth-key}}",
+      "placement": "header"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Score",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Standardized income verification attributes.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices/GetIncomeAttributes",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Returns a high-level overview of total income, employment income, and government income for standardized income verification."
+        },
+        {
+          "info": {
+            "name": "Credit risk and income attributes.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices/GetCreditRiskAttributes",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Returns overall financial information, employment and non-employment income sources, loan payments, bill payments, and additional risk analysis measures."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
