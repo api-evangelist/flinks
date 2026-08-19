@@ -30,7 +30,7 @@ tags:
 - Canada
 created: '2026-07-01'
 modified: '2026-07-01'
-specificationVersion: '0.19'
+specificationVersion: '0.23'
 apis:
 - aid: flinks:flinks-authorize-api
   name: Flinks Authorize API
