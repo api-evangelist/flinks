@@ -285,6 +285,9 @@ apis:
   - type: Documentation
     url: https://docs.flinks.com/docs/legacy-api-integrations
 common:
+- type: CapabilityMap
+  url: capabilities/flinks-capability-edges.yml
+  name: Flinks Business Capability Map
 - type: AgenticAccess
   url: agentic-access/flinks-agentic-access.yml
 - type: TrustCenter

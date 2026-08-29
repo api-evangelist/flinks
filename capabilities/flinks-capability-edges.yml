@@ -1,0 +1,45 @@
+slug: flinks
+provider: Flinks
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Banking & Capital Markets
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 3
+edges:
+- tag: Fraud
+  spec_file: flinks-fraud-api-openapi.yml
+  capability_id: BC-1400.30
+  capability_id_l1: BC-1400
+  capability_name: Fraud Detection & Investigation Management
+  confidence: 0.85
+  evidence: POST /FraudAnalysis — 'Run fraud analysis on uploaded documents.' with schema FraudAnalysisResponse
+  reason: Operations upload bank statement/transaction data and run fraud analysis on it, which is fraud
+    detection on financial documents — Fraud Detection & Investigation Management. Slight ambiguity only
+    over document-processing framing.
+- tag: Score
+  spec_file: flinks-score-api-openapi.yml
+  capability_id: BC-1320.20
+  capability_id_l1: BC-1320
+  capability_name: Credit Underwriting & Decisioning Management
+  confidence: 0.8
+  evidence: '''Standardized income verification attributes.'' and ''Credit risk and income attributes.'''
+  reason: Produces income-verification and credit-risk attributes consumed in lending decisions, which
+    supports underwriting and decisioning. Some ambiguity whether it better fits credit risk modelling
+    (BC-1320.60).
+- tag: Identity
+  spec_file: flinks-identity-api-openapi.yml
+  capability_id: BC-1300
+  capability_id_l1: BC-1300
+  capability_name: Banking Customer Management
+  confidence: 0.7
+  evidence: POST /FieldMatch — 'Verify applicant fields against the connected account holder.'
+  reason: The operation verifies an applicant's identity attributes against the bank account holder record
+    — identity verification used in onboarding/due diligence. L1 given only because evidence does not
+    distinguish account-opening identity verification (BC-1300.10) from KYC/CDD (BC-1300.20).
