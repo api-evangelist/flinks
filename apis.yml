@@ -8,6 +8,18 @@ description: Flinks is a Canadian financial data platform (owned by National Ban
   income, credit-risk, and fraud analytics. Access begins with a Flinks Connect
   authentication session and a multi-step /Authorize (MFA) call, after which banking,
   enrichment, and analytics endpoints are invoked with the returned RequestId.
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: true
+  label: Hosted service · you call their endpoint
+  confidence: high
+  source:
+  - openapi
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 accessModel:
   pricing: freemium
   onboarding: self-serve
