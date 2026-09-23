@@ -1,7 +1,7 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Flinks Authorize Score API
-  description: Representative specification of the Flinks financial data API. Businesses connect to consumer and business bank accounts to aggregate account, transaction, and statement data, verify identity, and derive income, credit-risk, and fraud analytics. A session is opened with the multi-step /Authorize (MFA) endpoint using a LoginId returned by Flinks Connect; the resulting RequestId is passed to subsequent data, enrichment, and analytics endpoints. All calls are authenticated with a short-lived authorize token supplied in the flinks-auth-key header.
+  title: Flinks Score API
+  description: Representative specification of the Flinks financial data API.
   termsOfService: https://flinks.com/terms-of-service/
   contact:
     name: Flinks Support
@@ -27,7 +27,7 @@ paths:
       operationId: getIncomeAttributes
       tags:
       - Score
-      summary: Standardized income verification attributes.
+      summary: Standardized income verification attributes
       description: Returns a high-level overview of total income, employment income, and government income for standardized income verification.
       requestBody:
         required: true
@@ -47,7 +47,7 @@ paths:
       operationId: getCreditRiskAttributes
       tags:
       - Score
-      summary: Credit risk and income attributes.
+      summary: Credit risk and income attributes
       description: Returns overall financial information, employment and non-employment income sources, loan payments, bill payments, and additional risk analysis measures.
       requestBody:
         required: true
@@ -64,6 +64,13 @@ paths:
                 $ref: '#/components/schemas/AttributesResponse'
 components:
   schemas:
+    Attribute:
+      type: object
+      properties:
+        Name:
+          type: string
+        Value:
+          type: string
     AttributesResponse:
       type: object
       properties:
@@ -74,13 +81,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Attribute'
-    Attribute:
-      type: object
-      properties:
-        Name:
-          type: string
-        Value:
-          type: string
     AttributesRequest:
       type: object
       properties:

@@ -1,7 +1,7 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Flinks Authorize Connect API
-  description: Representative specification of the Flinks financial data API. Businesses connect to consumer and business bank accounts to aggregate account, transaction, and statement data, verify identity, and derive income, credit-risk, and fraud analytics. A session is opened with the multi-step /Authorize (MFA) endpoint using a LoginId returned by Flinks Connect; the resulting RequestId is passed to subsequent data, enrichment, and analytics endpoints. All calls are authenticated with a short-lived authorize token supplied in the flinks-auth-key header.
+  title: Flinks Connect API
+  description: Representative specification of the Flinks financial data API.
   termsOfService: https://flinks.com/terms-of-service/
   contact:
     name: Flinks Support
@@ -27,7 +27,7 @@ paths:
       operationId: authorize
       tags:
       - Connect
-      summary: Open a banking session and handle MFA.
+      summary: Open a banking session and handle MFA
       description: Opens a session for a Flinks Connect LoginId. Returns HTTP 200 with a RequestId and Links on success, or HTTP 203 with SecurityChallenges when a multi-factor challenge is required. Resubmit with RequestId and SecurityResponses to complete the challenge.
       requestBody:
         required: true
@@ -65,7 +65,7 @@ paths:
       operationId: getAccountsDetail
       tags:
       - Connect
-      summary: Retrieve full account detail and transactions.
+      summary: Retrieve full account detail and transactions
       description: Returns full detail for each linked account - identity, balances, up to 90 or 365 days of transactions, and holder KYC. May return HTTP 202; poll /GetAccountsDetailAsync with the same RequestId until HTTP 200.
       requestBody:
         required: true
@@ -91,7 +91,7 @@ paths:
       operationId: getAccountsDetailAsync
       tags:
       - Connect
-      summary: Poll a pending accounts-detail request.
+      summary: Poll a pending accounts-detail request
       parameters:
       - name: requestId
         in: path
@@ -118,7 +118,7 @@ paths:
       operationId: getAccountsSummary
       tags:
       - Connect
-      summary: Retrieve general account summary information.
+      summary: Retrieve general account summary information
       description: Returns cardholder name (when available), balance, category, and EFT eligibility for each linked account, without full transaction history.
       requestBody:
         required: true
@@ -144,7 +144,7 @@ paths:
       operationId: getStatements
       tags:
       - Connect
-      summary: Retrieve PDF bank statements.
+      summary: Retrieve PDF bank statements
       description: Signs up one or more connected accounts to retrieve PDF statements issued by their financial institution.
       requestBody:
         required: true
@@ -161,52 +161,19 @@ paths:
                 $ref: '#/components/schemas/StatementsResponse'
 components:
   schemas:
-    SecurityChallenge:
-      type: object
-      properties:
-        Type:
-          type: string
-        Iterables:
-          type: array
-          items:
-            type: string
-        Prompt:
-          type: string
-    Transaction:
-      type: object
-      properties:
-        Date:
-          type: string
-          format: date
-        Description:
-          type: string
-        Debit:
-          type: number
-          nullable: true
-        Credit:
-          type: number
-          nullable: true
-        Balance:
-          type: number
-    StatementsResponse:
+    MfaChallengeResponse:
       type: object
       properties:
         RequestId:
           type: string
           format: uuid
-        Statements:
+        SecurityChallenges:
           type: array
           items:
-            $ref: '#/components/schemas/Statement'
-    RequestIdBody:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-          description: RequestId returned by /Authorize.
-      required:
-      - RequestId
+            $ref: '#/components/schemas/SecurityChallenge'
+        HttpStatusCode:
+          type: integer
+          example: 203
     Error:
       type: object
       properties:
@@ -220,6 +187,65 @@ components:
       required:
       - HttpStatusCode
       - Message
+    RequestIdBody:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+          description: RequestId returned by /Authorize.
+      required:
+      - RequestId
+    Holder:
+      type: object
+      properties:
+        Name:
+          type: string
+        Address:
+          type: object
+          properties:
+            CivicAddress:
+              type: string
+            City:
+              type: string
+            Province:
+              type: string
+            PostalCode:
+              type: string
+            Country:
+              type: string
+        Email:
+          type: string
+        PhoneNumber:
+          type: string
+    Transaction:
+      type: object
+      properties:
+        Date:
+          type: string
+          format: date
+        Description:
+          type: string
+        Debit:
+          type:
+          - number
+          - 'null'
+        Credit:
+          type:
+          - number
+          - 'null'
+        Balance:
+          type: number
+    StatementsResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Statements:
+          type: array
+          items:
+            $ref: '#/components/schemas/Statement'
     GetAccountsDetailRequest:
       type: object
       properties:
@@ -250,6 +276,98 @@ components:
           type: boolean
       required:
       - RequestId
+    AsyncPendingResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        HttpStatusCode:
+          type: integer
+          example: 202
+        Message:
+          type: string
+          example: Operation is pending; poll the async endpoint.
+    GetStatementsRequest:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        AccountsFilter:
+          type: array
+          items:
+            type: string
+        NumberOfStatements:
+          type: string
+          description: Number of PDF statements to retrieve (e.g. Months3, Months12).
+      required:
+      - RequestId
+    Statement:
+      type: object
+      properties:
+        AccountId:
+          type: string
+        FileName:
+          type: string
+        Base64Content:
+          type: string
+          description: Base64-encoded PDF statement.
+    SecurityChallenge:
+      type: object
+      properties:
+        Type:
+          type: string
+        Iterables:
+          type: array
+          items:
+            type: string
+        Prompt:
+          type: string
+    AccountsResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
+        Institution:
+          type: string
+        HttpStatusCode:
+          type: integer
+          example: 200
+    Account:
+      type: object
+      properties:
+        Id:
+          type: string
+        Title:
+          type: string
+        AccountNumber:
+          type: string
+        LastFourDigits:
+          type: string
+        TransitNumber:
+          type: string
+        InstitutionNumber:
+          type: string
+        Category:
+          type: string
+        Type:
+          type: string
+        Currency:
+          type: string
+        Balance:
+          $ref: '#/components/schemas/Balance'
+        Transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+        Holder:
+          $ref: '#/components/schemas/Holder'
     AuthorizeRequest:
       type: object
       properties:
@@ -285,6 +403,24 @@ components:
               type: string
       required:
       - LoginId
+    Link:
+      type: object
+      properties:
+        rel:
+          type: string
+        href:
+          type: string
+        method:
+          type: string
+    Balance:
+      type: object
+      properties:
+        Available:
+          type: number
+        Current:
+          type: number
+        Limit:
+          type: number
     AuthorizeResponse:
       type: object
       properties:
@@ -304,140 +440,6 @@ components:
         HttpStatusCode:
           type: integer
           example: 200
-    Balance:
-      type: object
-      properties:
-        Available:
-          type: number
-        Current:
-          type: number
-        Limit:
-          type: number
-    Link:
-      type: object
-      properties:
-        rel:
-          type: string
-        href:
-          type: string
-        method:
-          type: string
-    Holder:
-      type: object
-      properties:
-        Name:
-          type: string
-        Address:
-          type: object
-          properties:
-            CivicAddress:
-              type: string
-            City:
-              type: string
-            Province:
-              type: string
-            PostalCode:
-              type: string
-            Country:
-              type: string
-        Email:
-          type: string
-        PhoneNumber:
-          type: string
-    AsyncPendingResponse:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        HttpStatusCode:
-          type: integer
-          example: 202
-        Message:
-          type: string
-          example: Operation is pending; poll the async endpoint.
-    AccountsResponse:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        Accounts:
-          type: array
-          items:
-            $ref: '#/components/schemas/Account'
-        Institution:
-          type: string
-        HttpStatusCode:
-          type: integer
-          example: 200
-    MfaChallengeResponse:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        SecurityChallenges:
-          type: array
-          items:
-            $ref: '#/components/schemas/SecurityChallenge'
-        HttpStatusCode:
-          type: integer
-          example: 203
-    GetStatementsRequest:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        AccountsFilter:
-          type: array
-          items:
-            type: string
-        NumberOfStatements:
-          type: string
-          description: Number of PDF statements to retrieve (e.g. Months3, Months12).
-      required:
-      - RequestId
-    Account:
-      type: object
-      properties:
-        Id:
-          type: string
-        Title:
-          type: string
-        AccountNumber:
-          type: string
-        LastFourDigits:
-          type: string
-        TransitNumber:
-          type: string
-        InstitutionNumber:
-          type: string
-        Category:
-          type: string
-        Type:
-          type: string
-        Currency:
-          type: string
-        Balance:
-          $ref: '#/components/schemas/Balance'
-        Transactions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Transaction'
-        Holder:
-          $ref: '#/components/schemas/Holder'
-    Statement:
-      type: object
-      properties:
-        AccountId:
-          type: string
-        FileName:
-          type: string
-        Base64Content:
-          type: string
-          description: Base64-encoded PDF statement.
   securitySchemes:
     flinks_auth_key:
       type: apiKey

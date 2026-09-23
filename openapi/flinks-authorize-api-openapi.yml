@@ -1,7 +1,7 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
   title: Flinks Authorize API
-  description: Representative specification of the Flinks financial data API. Businesses connect to consumer and business bank accounts to aggregate account, transaction, and statement data, verify identity, and derive income, credit-risk, and fraud analytics. A session is opened with the multi-step /Authorize (MFA) endpoint using a LoginId returned by Flinks Connect; the resulting RequestId is passed to subsequent data, enrichment, and analytics endpoints. All calls are authenticated with a short-lived authorize token supplied in the flinks-auth-key header.
+  description: Representative specification of the Flinks financial data API.
   termsOfService: https://flinks.com/terms-of-service/
   contact:
     name: Flinks Support
@@ -27,7 +27,7 @@ paths:
       operationId: generateAuthorizeToken
       tags:
       - Authorize
-      summary: Generate a short-lived authorize token.
+      summary: Generate a short-lived authorize token
       description: Exchanges your API secret for a 30-minute authorize token that must be supplied in the flinks-auth-key header on all other endpoints.
       requestBody:
         required: true

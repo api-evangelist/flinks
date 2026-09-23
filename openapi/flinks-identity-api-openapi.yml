@@ -1,7 +1,7 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Flinks Authorize Identity API
-  description: Representative specification of the Flinks financial data API. Businesses connect to consumer and business bank accounts to aggregate account, transaction, and statement data, verify identity, and derive income, credit-risk, and fraud analytics. A session is opened with the multi-step /Authorize (MFA) endpoint using a LoginId returned by Flinks Connect; the resulting RequestId is passed to subsequent data, enrichment, and analytics endpoints. All calls are authenticated with a short-lived authorize token supplied in the flinks-auth-key header.
+  title: Flinks Identity API
+  description: Representative specification of the Flinks financial data API.
   termsOfService: https://flinks.com/terms-of-service/
   contact:
     name: Flinks Support
@@ -27,7 +27,7 @@ paths:
       operationId: fieldMatch
       tags:
       - Identity
-      summary: Verify applicant fields against the connected account holder.
+      summary: Verify applicant fields against the connected account holder
       description: Compares supplied applicant identity fields (name, address, phone, email) against the identity captured on the connected bank account and returns per-field match results.
       requestBody:
         required: true
@@ -44,25 +44,6 @@ paths:
                 $ref: '#/components/schemas/FieldMatchResponse'
 components:
   schemas:
-    FieldMatchResponse:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        Results:
-          type: array
-          items:
-            $ref: '#/components/schemas/FieldMatchResult'
-    FieldMatchResult:
-      type: object
-      properties:
-        Field:
-          type: string
-        Matched:
-          type: boolean
-        Score:
-          type: number
     FieldMatchRequest:
       type: object
       properties:
@@ -79,6 +60,25 @@ components:
           type: string
       required:
       - RequestId
+    FieldMatchResult:
+      type: object
+      properties:
+        Field:
+          type: string
+        Matched:
+          type: boolean
+        Score:
+          type: number
+    FieldMatchResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldMatchResult'
   securitySchemes:
     flinks_auth_key:
       type: apiKey
