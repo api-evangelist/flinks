@@ -44,14 +44,6 @@ paths:
                 $ref: '#/components/schemas/AuthorizeTokenResponse'
 components:
   schemas:
-    AuthorizeTokenResponse:
-      type: object
-      properties:
-        AuthorizeToken:
-          type: string
-        ExpiresIn:
-          type: integer
-          description: Token lifetime in seconds (1800).
     GenerateAuthorizeTokenRequest:
       type: object
       properties:
@@ -60,6 +52,14 @@ components:
           description: Your Flinks API secret.
       required:
       - secret
+    AuthorizeTokenResponse:
+      type: object
+      properties:
+        AuthorizeToken:
+          type: string
+        ExpiresIn:
+          type: integer
+          description: Token lifetime in seconds (1800).
   securitySchemes:
     flinks_auth_key:
       type: apiKey

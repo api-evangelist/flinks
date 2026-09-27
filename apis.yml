@@ -171,6 +171,8 @@ apis:
   humanURL: https://docs.flinks.com/api/authorize/endpoints/authorize
   baseURL: https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices
   tags:
+  - Fraud Prevention
+  tags_raw:
   - Fraud
   properties:
   - type: OpenAPI

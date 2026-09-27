@@ -43,15 +43,6 @@ paths:
                 $ref: '#/components/schemas/CategorizationResponse'
 components:
   schemas:
-    Category:
-      type: object
-      properties:
-        Name:
-          type: string
-        Amount:
-          type: number
-        Count:
-          type: integer
     CategorizationResponse:
       type: object
       properties:
@@ -71,6 +62,15 @@ components:
           description: RequestId returned by /Authorize.
       required:
       - RequestId
+    Category:
+      type: object
+      properties:
+        Name:
+          type: string
+        Amount:
+          type: number
+        Count:
+          type: integer
   securitySchemes:
     flinks_auth_key:
       type: apiKey

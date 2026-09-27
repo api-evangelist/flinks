@@ -64,13 +64,6 @@ paths:
                 $ref: '#/components/schemas/AttributesResponse'
 components:
   schemas:
-    Attribute:
-      type: object
-      properties:
-        Name:
-          type: string
-        Value:
-          type: string
     AttributesResponse:
       type: object
       properties:
@@ -81,6 +74,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Attribute'
+    Attribute:
+      type: object
+      properties:
+        Name:
+          type: string
+        Value:
+          type: string
     AttributesRequest:
       type: object
       properties:

@@ -161,41 +161,6 @@ paths:
                 $ref: '#/components/schemas/StatementsResponse'
 components:
   schemas:
-    MfaChallengeResponse:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        SecurityChallenges:
-          type: array
-          items:
-            $ref: '#/components/schemas/SecurityChallenge'
-        HttpStatusCode:
-          type: integer
-          example: 203
-    Error:
-      type: object
-      properties:
-        HttpStatusCode:
-          type: integer
-        Message:
-          type: string
-        FlinksCode:
-          type: string
-          description: Machine-readable code such as INVALID_LOGIN, DISABLED_LOGIN, or QUESTION_NOT_FOUND.
-      required:
-      - HttpStatusCode
-      - Message
-    RequestIdBody:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-          description: RequestId returned by /Authorize.
-      required:
-      - RequestId
     Holder:
       type: object
       properties:
@@ -218,6 +183,58 @@ components:
           type: string
         PhoneNumber:
           type: string
+    Error:
+      type: object
+      properties:
+        HttpStatusCode:
+          type: integer
+        Message:
+          type: string
+        FlinksCode:
+          type: string
+          description: Machine-readable code such as INVALID_LOGIN, DISABLED_LOGIN, or QUESTION_NOT_FOUND.
+      required:
+      - HttpStatusCode
+      - Message
+    Statement:
+      type: object
+      properties:
+        AccountId:
+          type: string
+        FileName:
+          type: string
+        Base64Content:
+          type: string
+          description: Base64-encoded PDF statement.
+    Account:
+      type: object
+      properties:
+        Id:
+          type: string
+        Title:
+          type: string
+        AccountNumber:
+          type: string
+        LastFourDigits:
+          type: string
+        TransitNumber:
+          type: string
+        InstitutionNumber:
+          type: string
+        Category:
+          type: string
+        Type:
+          type: string
+        Currency:
+          type: string
+        Balance:
+          $ref: '#/components/schemas/Balance'
+        Transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+        Holder:
+          $ref: '#/components/schemas/Holder'
     Transaction:
       type: object
       properties:
@@ -236,16 +253,34 @@ components:
           - 'null'
         Balance:
           type: number
-    StatementsResponse:
+    RequestIdBody:
       type: object
       properties:
         RequestId:
           type: string
           format: uuid
-        Statements:
+          description: RequestId returned by /Authorize.
+      required:
+      - RequestId
+    AuthorizeResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Institution:
+          type: string
+        InstitutionId:
+          type: string
+        Login:
+          type: object
+        Links:
           type: array
           items:
-            $ref: '#/components/schemas/Statement'
+            $ref: '#/components/schemas/Link'
+        HttpStatusCode:
+          type: integer
+          example: 200
     GetAccountsDetailRequest:
       type: object
       properties:
@@ -288,86 +323,6 @@ components:
         Message:
           type: string
           example: Operation is pending; poll the async endpoint.
-    GetStatementsRequest:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        AccountsFilter:
-          type: array
-          items:
-            type: string
-        NumberOfStatements:
-          type: string
-          description: Number of PDF statements to retrieve (e.g. Months3, Months12).
-      required:
-      - RequestId
-    Statement:
-      type: object
-      properties:
-        AccountId:
-          type: string
-        FileName:
-          type: string
-        Base64Content:
-          type: string
-          description: Base64-encoded PDF statement.
-    SecurityChallenge:
-      type: object
-      properties:
-        Type:
-          type: string
-        Iterables:
-          type: array
-          items:
-            type: string
-        Prompt:
-          type: string
-    AccountsResponse:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        Accounts:
-          type: array
-          items:
-            $ref: '#/components/schemas/Account'
-        Institution:
-          type: string
-        HttpStatusCode:
-          type: integer
-          example: 200
-    Account:
-      type: object
-      properties:
-        Id:
-          type: string
-        Title:
-          type: string
-        AccountNumber:
-          type: string
-        LastFourDigits:
-          type: string
-        TransitNumber:
-          type: string
-        InstitutionNumber:
-          type: string
-        Category:
-          type: string
-        Type:
-          type: string
-        Currency:
-          type: string
-        Balance:
-          $ref: '#/components/schemas/Balance'
-        Transactions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Transaction'
-        Holder:
-          $ref: '#/components/schemas/Holder'
     AuthorizeRequest:
       type: object
       properties:
@@ -403,15 +358,6 @@ components:
               type: string
       required:
       - LoginId
-    Link:
-      type: object
-      properties:
-        rel:
-          type: string
-        href:
-          type: string
-        method:
-          type: string
     Balance:
       type: object
       properties:
@@ -421,25 +367,79 @@ components:
           type: number
         Limit:
           type: number
-    AuthorizeResponse:
+    StatementsResponse:
       type: object
       properties:
         RequestId:
           type: string
           format: uuid
-        Institution:
-          type: string
-        InstitutionId:
-          type: string
-        Login:
-          type: object
-        Links:
+        Statements:
           type: array
           items:
-            $ref: '#/components/schemas/Link'
+            $ref: '#/components/schemas/Statement'
+    AccountsResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Account'
+        Institution:
+          type: string
         HttpStatusCode:
           type: integer
           example: 200
+    Link:
+      type: object
+      properties:
+        rel:
+          type: string
+        href:
+          type: string
+        method:
+          type: string
+    GetStatementsRequest:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        AccountsFilter:
+          type: array
+          items:
+            type: string
+        NumberOfStatements:
+          type: string
+          description: Number of PDF statements to retrieve (e.g. Months3, Months12).
+      required:
+      - RequestId
+    MfaChallengeResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        SecurityChallenges:
+          type: array
+          items:
+            $ref: '#/components/schemas/SecurityChallenge'
+        HttpStatusCode:
+          type: integer
+          example: 203
+    SecurityChallenge:
+      type: object
+      properties:
+        Type:
+          type: string
+        Iterables:
+          type: array
+          items:
+            type: string
+        Prompt:
+          type: string
   securitySchemes:
     flinks_auth_key:
       type: apiKey
