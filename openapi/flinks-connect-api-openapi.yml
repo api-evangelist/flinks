@@ -161,107 +161,6 @@ paths:
                 $ref: '#/components/schemas/StatementsResponse'
 components:
   schemas:
-    Holder:
-      type: object
-      properties:
-        Name:
-          type: string
-        Address:
-          type: object
-          properties:
-            CivicAddress:
-              type: string
-            City:
-              type: string
-            Province:
-              type: string
-            PostalCode:
-              type: string
-            Country:
-              type: string
-        Email:
-          type: string
-        PhoneNumber:
-          type: string
-    Error:
-      type: object
-      properties:
-        HttpStatusCode:
-          type: integer
-        Message:
-          type: string
-        FlinksCode:
-          type: string
-          description: Machine-readable code such as INVALID_LOGIN, DISABLED_LOGIN, or QUESTION_NOT_FOUND.
-      required:
-      - HttpStatusCode
-      - Message
-    Statement:
-      type: object
-      properties:
-        AccountId:
-          type: string
-        FileName:
-          type: string
-        Base64Content:
-          type: string
-          description: Base64-encoded PDF statement.
-    Account:
-      type: object
-      properties:
-        Id:
-          type: string
-        Title:
-          type: string
-        AccountNumber:
-          type: string
-        LastFourDigits:
-          type: string
-        TransitNumber:
-          type: string
-        InstitutionNumber:
-          type: string
-        Category:
-          type: string
-        Type:
-          type: string
-        Currency:
-          type: string
-        Balance:
-          $ref: '#/components/schemas/Balance'
-        Transactions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Transaction'
-        Holder:
-          $ref: '#/components/schemas/Holder'
-    Transaction:
-      type: object
-      properties:
-        Date:
-          type: string
-          format: date
-        Description:
-          type: string
-        Debit:
-          type:
-          - number
-          - 'null'
-        Credit:
-          type:
-          - number
-          - 'null'
-        Balance:
-          type: number
-    RequestIdBody:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-          description: RequestId returned by /Authorize.
-      required:
-      - RequestId
     AuthorizeResponse:
       type: object
       properties:
@@ -281,6 +180,67 @@ components:
         HttpStatusCode:
           type: integer
           example: 200
+    Transaction:
+      type: object
+      properties:
+        Date:
+          type: string
+          format: date
+        Description:
+          type: string
+        Debit:
+          type:
+          - number
+          - 'null'
+        Credit:
+          type:
+          - number
+          - 'null'
+        Balance:
+          type: number
+    SecurityChallenge:
+      type: object
+      properties:
+        Type:
+          type: string
+        Iterables:
+          type: array
+          items:
+            type: string
+        Prompt:
+          type: string
+    StatementsResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Statements:
+          type: array
+          items:
+            $ref: '#/components/schemas/Statement'
+    MfaChallengeResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        SecurityChallenges:
+          type: array
+          items:
+            $ref: '#/components/schemas/SecurityChallenge'
+        HttpStatusCode:
+          type: integer
+          example: 203
+    Balance:
+      type: object
+      properties:
+        Available:
+          type: number
+        Current:
+          type: number
+        Limit:
+          type: number
     GetAccountsDetailRequest:
       type: object
       properties:
@@ -311,18 +271,53 @@ components:
           type: boolean
       required:
       - RequestId
-    AsyncPendingResponse:
+    Link:
+      type: object
+      properties:
+        rel:
+          type: string
+        href:
+          type: string
+        method:
+          type: string
+    Account:
+      type: object
+      properties:
+        Id:
+          type: string
+        Title:
+          type: string
+        AccountNumber:
+          type: string
+        LastFourDigits:
+          type: string
+        TransitNumber:
+          type: string
+        InstitutionNumber:
+          type: string
+        Category:
+          type: string
+        Type:
+          type: string
+        Currency:
+          type: string
+        Balance:
+          $ref: '#/components/schemas/Balance'
+        Transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+        Holder:
+          $ref: '#/components/schemas/Holder'
+    RequestIdBody:
       type: object
       properties:
         RequestId:
           type: string
           format: uuid
-        HttpStatusCode:
-          type: integer
-          example: 202
-        Message:
-          type: string
-          example: Operation is pending; poll the async endpoint.
+          description: RequestId returned by /Authorize.
+      required:
+      - RequestId
     AuthorizeRequest:
       type: object
       properties:
@@ -358,25 +353,63 @@ components:
               type: string
       required:
       - LoginId
-    Balance:
-      type: object
-      properties:
-        Available:
-          type: number
-        Current:
-          type: number
-        Limit:
-          type: number
-    StatementsResponse:
+    AsyncPendingResponse:
       type: object
       properties:
         RequestId:
           type: string
           format: uuid
-        Statements:
-          type: array
-          items:
-            $ref: '#/components/schemas/Statement'
+        HttpStatusCode:
+          type: integer
+          example: 202
+        Message:
+          type: string
+          example: Operation is pending; poll the async endpoint.
+    Statement:
+      type: object
+      properties:
+        AccountId:
+          type: string
+        FileName:
+          type: string
+        Base64Content:
+          type: string
+          description: Base64-encoded PDF statement.
+    Holder:
+      type: object
+      properties:
+        Name:
+          type: string
+        Address:
+          type: object
+          properties:
+            CivicAddress:
+              type: string
+            City:
+              type: string
+            Province:
+              type: string
+            PostalCode:
+              type: string
+            Country:
+              type: string
+        Email:
+          type: string
+        PhoneNumber:
+          type: string
+    Error:
+      type: object
+      properties:
+        HttpStatusCode:
+          type: integer
+        Message:
+          type: string
+        FlinksCode:
+          type: string
+          description: Machine-readable code such as INVALID_LOGIN, DISABLED_LOGIN, or QUESTION_NOT_FOUND.
+      required:
+      - HttpStatusCode
+      - Message
     AccountsResponse:
       type: object
       properties:
@@ -392,15 +425,6 @@ components:
         HttpStatusCode:
           type: integer
           example: 200
-    Link:
-      type: object
-      properties:
-        rel:
-          type: string
-        href:
-          type: string
-        method:
-          type: string
     GetStatementsRequest:
       type: object
       properties:
@@ -416,30 +440,6 @@ components:
           description: Number of PDF statements to retrieve (e.g. Months3, Months12).
       required:
       - RequestId
-    MfaChallengeResponse:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        SecurityChallenges:
-          type: array
-          items:
-            $ref: '#/components/schemas/SecurityChallenge'
-        HttpStatusCode:
-          type: integer
-          example: 203
-    SecurityChallenge:
-      type: object
-      properties:
-        Type:
-          type: string
-        Iterables:
-          type: array
-          items:
-            type: string
-        Prompt:
-          type: string
   securitySchemes:
     flinks_auth_key:
       type: apiKey
