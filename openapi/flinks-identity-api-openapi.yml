@@ -54,15 +54,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FieldMatchResult'
-    FieldMatchResult:
-      type: object
-      properties:
-        Field:
-          type: string
-        Matched:
-          type: boolean
-        Score:
-          type: number
     FieldMatchRequest:
       type: object
       properties:
@@ -79,6 +70,15 @@ components:
           type: string
       required:
       - RequestId
+    FieldMatchResult:
+      type: object
+      properties:
+        Field:
+          type: string
+        Matched:
+          type: boolean
+        Score:
+          type: number
   securitySchemes:
     flinks_auth_key:
       type: apiKey
