@@ -1,0 +1,16 @@
+generated: '2026-10-12'
+method: none
+source:
+- https://zapier.com/apps/flinks/integrations
+- https://n8n.io/integrations/flinks/
+- https://composio.dev/toolkits/flinks
+- https://monid.ai/tools/flinks
+checked:
+- https://composio.dev/toolkits/flinks
+- https://monid.ai/tools/flinks
+- https://n8n.io/integrations/flinks/
+- https://zapier.com/apps/flinks/integrations
+summary: null
+marketplace_apps: []
+edges: []
+templates: []
