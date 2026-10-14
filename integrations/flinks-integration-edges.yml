@@ -1,5 +1,5 @@
 generated: '2026-10-12'
-method: none
+method: searched
 source:
 - https://zapier.com/apps/flinks/integrations
 - https://n8n.io/integrations/flinks/
@@ -9,8 +9,33 @@ checked:
 - https://composio.dev/toolkits/flinks
 - https://monid.ai/tools/flinks
 - https://n8n.io/integrations/flinks/
+- https://registry.financialdataexchange.org/
 - https://zapier.com/apps/flinks/integrations
 summary: null
 marketplace_apps: []
-edges: []
+edges:
+- partner_name: FDX (Financial Data Exchange)
+  partner: fdx
+  type: contract
+  channel: standard-directory
+  relationship: standard-participant
+  direction: partner-built
+  evidence: https://registry.financialdataexchange.org/
+  contract_reference:
+    register: FDX Registry
+    standard: FDX API
+    spec_file: null
+    register_api: https://registry.financialdataexchange.org/fdxregistryapi/organizations/search/listingTags
+    role: data-access-platform
+    member_type: MEMBER
+    registered_name: Flinks
+    register_id: 203
+    registered_website: https://flinks.com/
+    country: Canada
+    fdx_version: null
+    matched_by: domain:flinks.com
+    detected_by: sweep-fdx.py
+    detected: '2026-10-14'
+  detected_by: sweep-fdx.py
+  first_seen: '2026-10-14'
 templates: []
