@@ -64,6 +64,16 @@ paths:
                 $ref: '#/components/schemas/AttributesResponse'
 components:
   schemas:
+    AttributesResponse:
+      type: object
+      properties:
+        RequestId:
+          type: string
+          format: uuid
+        Attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attribute'
     AttributesRequest:
       type: object
       properties:
@@ -75,16 +85,6 @@ components:
           description: Attributes package name to compute.
       required:
       - RequestId
-    AttributesResponse:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        Attributes:
-          type: array
-          items:
-            $ref: '#/components/schemas/Attribute'
     Attribute:
       type: object
       properties:

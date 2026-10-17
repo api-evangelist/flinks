@@ -44,16 +44,15 @@ paths:
                 $ref: '#/components/schemas/FieldMatchResponse'
 components:
   schemas:
-    FieldMatchResponse:
+    FieldMatchResult:
       type: object
       properties:
-        RequestId:
+        Field:
           type: string
-          format: uuid
-        Results:
-          type: array
-          items:
-            $ref: '#/components/schemas/FieldMatchResult'
+        Matched:
+          type: boolean
+        Score:
+          type: number
     FieldMatchRequest:
       type: object
       properties:
@@ -70,15 +69,16 @@ components:
           type: string
       required:
       - RequestId
-    FieldMatchResult:
+    FieldMatchResponse:
       type: object
       properties:
-        Field:
+        RequestId:
           type: string
-        Matched:
-          type: boolean
-        Score:
-          type: number
+          format: uuid
+        Results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldMatchResult'
   securitySchemes:
     flinks_auth_key:
       type: apiKey
