@@ -1,448 +1,1884 @@
 openapi: 3.2.0
 info:
   title: Flinks Connect API
-  description: Representative specification of the Flinks financial data API.
-  termsOfService: https://flinks.com/terms-of-service/
+  description: 'Flinks API provides financial data connectivity, enrichment, and payment solutions.
+
+
+    ## Authentication
+
+    Endpoints require authentication using `flinks-auth-key` header (Bearer token).
+
+
+    For more information, visit: https://docs.flinks.com'
+  version: 3.0.0
   contact:
     name: Flinks Support
-    url: https://help.flinks.com/
-  version: '3.0'
+    url: https://www.flinks.com/contact/sales
+  termsOfService: https://www.flinks.com
 servers:
-- url: https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices
-  description: Flinks per-customer instance host.
+- url: https://{instance}-api.private.fin.ag
+  description: Flinks API Environment
   variables:
     instance:
       default: toolbox
-      description: Assigned instance / environment prefix (e.g. toolbox for sandbox).
-    customerId:
-      default: 00000000-0000-0000-0000-000000000000
-      description: Your Flinks customer identifier (GUID).
-security:
-- flinks_auth_key: []
+      description: The environment instance (e.g., toolbox, sandbox, production)
 tags:
 - name: Connect
 paths:
-  /Authorize:
+  /v3/{customerId}/BankingServices/GetAccountsSummary:
     post:
-      operationId: authorize
       tags:
       - Connect
-      summary: Open a banking session and handle MFA
-      description: Opens a session for a Flinks Connect LoginId. Returns HTTP 200 with a RequestId and Links on success, or HTTP 203 with SecurityChallenges when a multi-factor challenge is required. Resubmit with RequestId and SecurityResponses to complete the challenge.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AuthorizeRequest'
-      responses:
-        '200':
-          description: Authorization successful; session is ready for data calls.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthorizeResponse'
-        '203':
-          description: Multi-factor authentication required.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MfaChallengeResponse'
-        '400':
-          description: Invalid parameters.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Authentication failed.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  /GetAccountsDetail:
-    post:
-      operationId: getAccountsDetail
-      tags:
-      - Connect
-      summary: Retrieve full account detail and transactions
-      description: Returns full detail for each linked account - identity, balances, up to 90 or 365 days of transactions, and holder KYC. May return HTTP 202; poll /GetAccountsDetailAsync with the same RequestId until HTTP 200.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetAccountsDetailRequest'
-      responses:
-        '200':
-          description: Account detail returned.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccountsResponse'
-        '202':
-          description: Request accepted and processing; poll the async endpoint.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AsyncPendingResponse'
-  /GetAccountsDetailAsync/{requestId}:
-    get:
-      operationId: getAccountsDetailAsync
-      tags:
-      - Connect
-      summary: Poll a pending accounts-detail request
+      summary: Get Accounts Summary
+      description: To access general account details such as the cardholder's name (when available), account balance, account category and EFT eligibility, use the /GetAccountsSummary endpoint.
+      operationId: getAccountsSummary
       parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID provided by Flinks that grants you access to the environment specified in the instance field.
+      - name: x-api-key
+        in: header
+        schema:
+          type: string
+        description: Security feature that grants access to this endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - RequestId
+              properties:
+                RequestId:
+                  type: string
+                  description: Unique identifier provided after a successful request to the /Authorize endpoint.
+                WithBalance:
+                  type: boolean
+                  default: true
+                  description: Specifies if you want to include account balances in the account summary.
+                WithAccountIdentity:
+                  type: boolean
+                  default: true
+                  description: Specifies if you want to include the account numbers in the account summary.
+              example:
+                RequestId: 3fa391bc-bc52-4424-82c5-8662600df9b2
+                WithBalance: true
+                WithAccountIdentity: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  Accounts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        EftEligibleRatio:
+                          type: integer
+                          description: Decimal value (0-1) indicating EFT eligibility percentage.
+                        ETransferEligibleRatio:
+                          type: integer
+                          description: Decimal value (0-1) indicating e-Transfer eligibility percentage.
+                        Title:
+                          type: string
+                          description: Account title (e.g., "Primary Chequing Account").
+                        AccountNumber:
+                          type: string
+                          description: Account number.
+                        LastFourDigits:
+                          type: string
+                          description: Last four digits of the account number.
+                        Balance:
+                          type: object
+                          description: Account balance information.
+                          properties:
+                            Available:
+                              type: number
+                            Current:
+                              type: number
+                            Limit:
+                              type: string
+                        Category:
+                          type: string
+                          description: Account category (e.g., "Operations").
+                        Type:
+                          type: string
+                          description: Account type (e.g., "Chequing", "Savings").
+                        Currency:
+                          type: string
+                          description: Currency code (e.g., "CAD").
+                        Holder:
+                          type: object
+                          description: Account holder information.
+                          properties:
+                            Name:
+                              type: string
+                              description: Account holder name.
+                            Address:
+                              type: object
+                              description: Account holder address.
+                              properties:
+                                CivicAddress:
+                                  type: string
+                                  description: Street address.
+                                City:
+                                  type: string
+                                  description: City name.
+                                Province:
+                                  type: string
+                                  description: Province/State code.
+                                PostalCode:
+                                  type: string
+                                  description: Postal/ZIP code.
+                                POBox:
+                                  type: string
+                                  description: PO Box (if applicable).
+                                Country:
+                                  type: string
+                                  description: Country code.
+                            Email:
+                              type: string
+                              description: Account holder email.
+                            PhoneNumber:
+                              type: string
+                              description: Account holder phone number.
+                        AccountType:
+                          type:
+                          - string
+                          - 'null'
+                          enum:
+                          - Personal
+                          - Business
+                          description: Type of account.
+                        Id:
+                          type: string
+                          description: Unique account identifier.
+                  Links:
+                    type: array
+                    description: List of available data endpoints.
+                    items:
+                      type: object
+                      properties:
+                        rel:
+                          type: string
+                          description: Relationship type of the link.
+                        href:
+                          type: string
+                          description: Endpoint path.
+                        example:
+                          type: string
+                          description: Example value (if applicable).
+                  Tag:
+                    type: string
+                    description: User tag (if provided).
+                  InstitutionName:
+                    type: string
+                    description: Name of the financial institution.
+                  Login:
+                    type: object
+                    description: Login information.
+                    properties:
+                      Username:
+                        type: string
+                        description: Login username.
+                      IsScheduledRefresh:
+                        type: boolean
+                        description: Indicates if scheduled refresh is enabled.
+                      LastRefresh:
+                        type: string
+                        description: Timestamp of last data refresh.
+                      Type:
+                        type: string
+                        description: Login type (e.g., "Personal", "Business").
+                      Id:
+                        type: string
+                        description: Unique login identifier.
+                  InstitutionId:
+                    type: integer
+                    description: Unique identifier of the financial institution.
+                  Institution:
+                    type: string
+                    description: Name of the financial institution.
+                  RequestId:
+                    type: string
+              example:
+                HttpStatusCode: 200
+                Accounts:
+                - EftEligibleRatio: 0
+                  ETransferEligibleRatio: 0
+                  Title: Primary Chequing Account
+                  AccountNumber: '1234567'
+                  LastFourDigits: null
+                  Balance:
+                    Available: 1234.45
+                    Current: 4321.45
+                    Limit: null
+                  Category: Operations
+                  Type: Chequing
+                  Currency: CAD
+                  Holder:
+                    Name: John Doe
+                    Address:
+                      CivicAddress: 20 Park Avenue
+                      City: Toronto
+                      Province: 'ON'
+                      PostalCode: X1X X2X
+                      POBox: null
+                      Country: CA
+                    Email: johndoe@test.com
+                    PhoneNumber: +1 123-456-7890
+                  AccountType: Personal
+                  Id: xxxx-xxxx-xxxxxxx-xxxxxx
+                Links:
+                - rel: AccountsDetail
+                  href: /GetAccountsDetail
+                  example: null
+                - rel: Statements
+                  href: /GetStatements
+                  example: null
+                Tag: userId=xxxxxxxxxxxx
+                InstitutionName: BMO
+                Login:
+                  Username: '1234567890'
+                  IsScheduledRefresh: false
+                  LastRefresh: '2024-10-10T12:00:00.000000'
+                  Type: Business
+                  Id: xxxx-xxxx-xxxxxx-xxxxxx
+                InstitutionId: 1
+                Institution: BMO
+                RequestId: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx
+        '202':
+          description: Operation Pending
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    example: 202
+                    description: HTTP status code of the response.
+                  FlinksCode:
+                    type: string
+                    example: OPERATION_PENDING
+                    description: Flinks-specific code OPERATION_PENDING.
+                  Links:
+                    type: array
+                    description: Links to async endpoint to check status.
+                    items:
+                      type: object
+                      properties:
+                        rel:
+                          type: string
+                        href:
+                          type: string
+                        example:
+                          type: string
+                  Message:
+                    type: string
+                    example: Your operation is still processing
+                    description: Status message.
+                  RequestId:
+                    type: string
+                    description: Unique request identifier.
+              example:
+                FlinksCode: OPERATION_PENDING
+                Links:
+                - rel: '{Endpoint}Async'
+                  href: /{Endpoint}Async
+                  example: /{Endpoint}Async/{requestId}
+                HttpStatusCode: 202
+                Message: Your operation is still processing
+                RequestId: 077785a3-fd0f-42f7-9251-ee2ff7f3b4ff
+        '400':
+          description: Session Nonexistent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code.
+                  Message:
+                    type: string
+                    description: Error message.
+                  FlinksCode:
+                    type: string
+              example:
+                HttpStatusCode: 400
+                Message: RequestId 1df20baf-65d5-40ee-9be0-8058c13042e2 is invalid or session has ended
+                FlinksCode: SESSION_NONEXISTENT
+  /v3/{customerId}/BankingServices/GetAccountsDetail:
+    post:
+      tags:
+      - Connect
+      summary: Get Accounts Detail
+      description: To retrieve full account details, including transactions, the holder's name, address, email and phone number, use the /GetAccountsDetail endpoint.
+      operationId: getAccountsDetail
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID provided by Flinks.
+      - name: x-api-key
+        in: header
+        schema:
+          type: string
+        description: Security feature that grants access to this endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - RequestId
+              properties:
+                RequestId:
+                  type: string
+                  default: 3fa391bc-bc52-4424-82c5-8662600df9b2
+                  description: Unique identifier provided after a successful request to the /Authorize endpoint.
+                WithAccountIdentity:
+                  type: boolean
+                  default: true
+                  description: Specifies if you want to include the transit number, institution number and account number.
+                WithKYC:
+                  type: boolean
+                  default: true
+                  description: Specifies if you want to include customer information in the account details.
+                WithTransactions:
+                  type: boolean
+                  default: true
+                  description: Specifies if you want to include transactions in the account details.
+                AccountsFilter:
+                  type: array
+                  items:
+                    type: string
+                  description: Accounts that you are linking to this session.
+                DaysOfTransactions:
+                  type: string
+                  default: Days90
+                  enum:
+                  - Days90
+                  - Days365
+                  description: Number of days that you want to see transaction data for.
+                WithDetailsAndBankingStatements:
+                  type: boolean
+                  default: false
+                  description: Specifies if you want to enable PDF statements.
+                NumberOfBankingStatements:
+                  type: string
+                  default: MostRecent
+                  description: Number of PDF banking statements that are returned.
+              example:
+                RequestId: 3fa391bc-bc52-4424-82c5-8662600df9b2
+                WithAccountIdentity: true
+                WithKYC: true
+                WithTransactions: true
+                DaysOfTransactions: Days90
+                WithDetailsAndBankingStatements: false
+                NumberOfBankingStatements: MostRecent
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                  Accounts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Id:
+                          type: string
+                          description: Unique identifier for the account.
+                        Title:
+                          type: string
+                          description: Display name of the account.
+                        AccountNumber:
+                          type: string
+                          description: Full account number.
+                        LastFourDigits:
+                          type: string
+                          description: Last four digits of the account number.
+                        TransitNumber:
+                          type: string
+                          description: Transit or routing number for the account.
+                        InstitutionNumber:
+                          type: string
+                          description: Institution number for the bank.
+                        Balance:
+                          type: object
+                          description: Account balance information.
+                          properties:
+                            Available:
+                              type: number
+                            Current:
+                              type: number
+                            Limit:
+                              type: string
+                        Category:
+                          type: string
+                          description: Category of the account.
+                        Type:
+                          type: string
+                          description: Type of account.
+                        Currency:
+                          type: string
+                        Holder:
+                          type: object
+                          description: Information about the account holder.
+                          properties:
+                            Name:
+                              type: string
+                            Address:
+                              type: object
+                              properties:
+                                CivicAddress:
+                                  type: string
+                                City:
+                                  type: string
+                                Province:
+                                  type: string
+                                PostalCode:
+                                  type: string
+                                POBox:
+                                  type: string
+                                Country:
+                                  type: string
+                            Email:
+                              type: string
+                            PhoneNumber:
+                              type: string
+                        Transactions:
+                          type: array
+                          description: Array of transaction records for the account.
+                          items:
+                            type: object
+                            properties:
+                              Id:
+                                type: string
+                              Date:
+                                type: string
+                              Description:
+                                type: string
+                              Debit:
+                                type: number
+                              Credit:
+                                type: number
+                              Balance:
+                                type: number
+                        AccountType:
+                          type:
+                          - string
+                          - 'null'
+                          enum:
+                          - Personal
+                          - Business
+                          description: Type of account.
+                  InstitutionName:
+                    type: string
+                  Login:
+                    type: object
+                    description: Information about the login session.
+                  InstitutionId:
+                    type: integer
+                  Institution:
+                    type: string
+                  RequestId:
+                    type: string
+              example:
+                HttpStatusCode: 200
+                Accounts:
+                - Transactions:
+                  - Date: '2025-01-31'
+                    Code: null
+                    Description: PAYROLL - Stripe Paycheck
+                    Debit: 1000.4
+                    Credit: 1500.25
+                    Balance: 5105.6
+                    Id: 94584aed-7c98-42a4-9836-9f8557db63f5
+                  TransitNumber: '12347'
+                  InstitutionNumber: '777'
+                  OverdraftLimit: 100.5
+                  Title: Chequing Account
+                  AccountNumber: '7641238'
+                  LastFourDigits: null
+                  Balance:
+                    Available: 5405.5
+                    Current: 5105.5
+                    Limit: 5105.5
+                  Category: Operations
+                  Type: Chequing
+                  Currency: CAD
+                  Holder:
+                    Name: Testing
+                    Address:
+                      CivicAddress: 25 york street
+                      City: TOR
+                      Province: 'ON'
+                      PostalCode: M5J 2V5
+                      POBox: null
+                      Country: CA
+                    Email: test_user1@nomail.com
+                    PhoneNumber: '9051234567'
+                  AccountType: null
+                  Id: 27a9ffa0-c6b9-4cc6-9eaa-aa9efa07a889
+                InstitutionName: FlinksCapital
+                Login:
+                  Username: chat_gpt
+                  IsScheduledRefresh: false
+                  LastRefresh: '2025-01-31T17:40:54.569261'
+                  Type: Personal
+                  Id: 5602459c-f6d0-4ca0-6750-08dccdcadcc0
+                InstitutionId: 14
+                Institution: FlinksCapital
+                RequestId: 22178382-31ee-485c-a750-c20929b6a344
+        '202':
+          description: Operation Pending
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  FlinksCode:
+                    type: string
+                  Links:
+                    type: array
+                    items:
+                      type: object
+                  HttpStatusCode:
+                    type: integer
+                  Message:
+                    type: string
+                  RequestId:
+                    type: string
+              example:
+                FlinksCode: OPERATION_PENDING
+                Links:
+                - rel: '{Endpoint}Async'
+                  href: /{Endpoint}Async
+                  example: /{Endpoint}Async/{requestId}
+                HttpStatusCode: 202
+                Message: Your operation is still processing
+                RequestId: 077785a3-fd0f-42f7-9251-ee2ff7f3b4ff
+  /v3/{customerId}/BankingServices/GetStatements:
+    post:
+      tags:
+      - Connect
+      summary: Get Statements
+      description: To retrieve PDF statements from a customer's financial institution, use the /GetStatements endpoint.
+      operationId: getStatements
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Key that grants access to the environment.
+      - name: x-api-key
+        in: header
+        schema:
+          type: string
+        description: Security feature that grants access to this endpoint.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - RequestId
+              properties:
+                RequestId:
+                  type: string
+                  description: Unique identifier provided after a successful request to the /Authorize endpoint.
+                NumberOfStatements:
+                  type: string
+                  default: MostRecent
+                  enum:
+                  - MostRecent
+                  - Months3
+                  - Months12
+                  description: Number of PDF banking statements that are returned per customer account.
+                AccountsFilter:
+                  type: array
+                  items:
+                    type: string
+                  description: You can include the AccountsFilter parameter in the request body.
+              example:
+                NumberOfStatements: MostRecent
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                  StatementsByAccount:
+                    type: array
+                    description: Array containing statements organized by account.
+                    items:
+                      type: object
+                      properties:
+                        AccountNumber:
+                          type: string
+                          description: The account number for which statements are provided.
+                        Statements:
+                          type: array
+                          description: Array of statement objects for this account.
+                          items:
+                            type: object
+                            properties:
+                              UniqueId:
+                                type: string
+                                description: Unique identifier for the statement.
+                              FileType:
+                                type: string
+                                description: File format of the statement (e.g., "PDF").
+                              Base64Bytes:
+                                type: string
+                                description: Base64-encoded bytes of the PDF statement file.
+                  Login:
+                    type: object
+                    description: Login information.
+                    properties:
+                      Username:
+                        type: string
+                      IsScheduledRefresh:
+                        type: boolean
+                      LastRefresh:
+                        type: string
+                      Type:
+                        type: string
+                      Id:
+                        type: string
+                  Institution:
+                    type: string
+                  RequestId:
+                    type: string
+              example:
+                HttpStatusCode: 200
+                StatementsByAccount:
+                - AccountNumber: '1111000'
+                  Statements:
+                  - UniqueId: 3DD209E106553D2BB0A6EFF57FD0480C
+                    FileType: PDF
+                    Base64Bytes: '...'
+                Login:
+                  Username: Greatday
+                  IsScheduledRefresh: false
+                  LastRefresh: '2019-05-17T15:29:23.7035672'
+                  Type: Personal
+                  Id: 34c85a5d-f278-467b-29ed-08d682e1fef5
+                Institution: FlinksCapital
+                RequestId: f56f8b80-9949-4c60-ad63-dcdc0fd1456b
+        '202':
+          description: Operation Pending
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  FlinksCode:
+                    type: string
+                  Links:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        rel:
+                          type: string
+                        href:
+                          type: string
+                        example:
+                          type: string
+                  HttpStatusCode:
+                    type: integer
+                  Message:
+                    type: string
+                  RequestId:
+                    type: string
+              example:
+                FlinksCode: OPERATION_PENDING
+                Links:
+                - rel: '{Endpoint}Async'
+                  href: /{Endpoint}Async
+                  example: /{Endpoint}Async/{requestId}
+                HttpStatusCode: 202
+                Message: Your operation is still processing
+                RequestId: f56f8b80-9949-4c60-ad63-dcdc0fd1456b
+  /v3/{customerId}/BankingServices/Institutions:
+    get:
+      tags:
+      - Connect
+      summary: Get Institutions
+      description: Retrieve all available institutions and their details.
+      operationId: getInstitutions
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID provided by Flinks.
+      - name: x-api-key
+        in: header
+        schema:
+          type: string
+        description: Security feature that grants access to this endpoint.
+      - name: skip
+        in: query
+        schema:
+          type: integer
+          default: 0
+        description: The number of records to skip.
+      - name: take
+        in: query
+        schema:
+          type: integer
+          default: 10
+        description: The number of records to return.
+      - name: countries
+        in: query
+        schema:
+          type: string
+        description: Return institutions filtered by country.
+      - name: routingNumbers
+        in: query
+        schema:
+          type: string
+        description: Return institutions filtered by routing numbers.
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Id:
+                          type: integer
+                          description: Unique identifier for the institution.
+                        Localizations:
+                          type: array
+                          description: Localized information for the institution.
+                          items:
+                            type: object
+                            properties:
+                              Language:
+                                type: string
+                              Name:
+                                type: string
+                              Urls:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    Type:
+                                      type: string
+                                    Url:
+                                      type: string
+                        Status:
+                          type: string
+                          description: Status of the institution.
+                        Country:
+                          type: string
+                          description: Country code.
+                  Count:
+                    type: integer
+                    description: Total count of institutions matching the query.
+              example:
+                Data:
+                - Id: 1
+                  Localizations:
+                  - Language: fr
+                    Name: BMO
+                    Urls:
+                    - Type: Main
+                      Url: https://www.bmo.com/principal/particuliers
+                  - Language: en
+                    Name: BMO
+                    Urls:
+                    - Type: Main
+                      Url: https://www.bmo.com/main/personal
+                  Status: Enabled
+                  Country: CA
+                - Id: 2
+                  Localizations:
+                  - Language: en
+                    Name: Desjardins
+                    Urls:
+                    - Type: Main
+                      Url: https://www.desjardins.com/ca/index.jsp
+                  - Language: fr
+                    Name: Desjardins
+                    Urls:
+                    - Type: Main
+                      Url: https://www.desjardins.com/index.jsp
+                  Status: Enabled
+                  Country: CA
+                Count: 249
+  /v3/{customerId}/BankingServices/DeleteCard/{loginId}:
+    delete:
+      tags:
+      - Connect
+      summary: Delete Card
+      description: Delete all data that's associated with a specific user account.
+      operationId: deleteCard
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID provided by Flinks.
+      - name: loginId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique loginId associated with the account you want to delete.
+      - name: x-api-key
+        in: header
+        schema:
+          type: string
+        description: Security feature that grants access to this endpoint.
+      - name: Content-Type
+        in: header
+        required: true
+        description: Content type of the request.
+        schema:
+          type: string
+          enum:
+          - application/json
+          default: application/json
+          example: application/json
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  StatusCode:
+                    type: integer
+                  Message:
+                    type: string
+              example:
+                StatusCode: 200
+                Message: All of the information about LoginId eceae0c0-1ed3-468f-ae30-08d6decf1675 has been removed
+        '400':
+          description: Card In Use
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                  Message:
+                    type: string
+                  FlinksCode:
+                    type: string
+              example:
+                HttpStatusCode: 400
+                Message: You can't remove the card and use the card in parallel. Please stop using the card and remove it again
+                FlinksCode: CARD_IN_USE
+  /v3/{customerId}/BankingServices/GetAccountsSummaryAsync/{requestId}:
+    get:
+      tags:
+      - Connect
+      summary: Get Accounts Summary Async
+      description: Get pending requests from GetAccountsSummary.
+      operationId: getAccountsSummaryAsync
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID provided by Flinks.
       - name: requestId
         in: path
         required: true
         schema:
           type: string
-          format: uuid
-        description: The RequestId returned by /Authorize.
+        description: Unique identifier provided after a successful request to the Authorize endpoint.
+      - name: x-api-key
+        in: header
+        schema:
+          type: string
+        description: Security feature that grants access to this endpoint.
+      - name: Content-Type
+        in: header
+        required: true
+        description: Content type of the request.
+        schema:
+          type: string
+          default: application/json
+          example: application/json
       responses:
         '200':
-          description: Account detail returned.
+          description: Result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountsResponse'
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                  Accounts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        EftEligibleRatio:
+                          type: integer
+                        ETransferEligibleRatio:
+                          type: integer
+                        Title:
+                          type: string
+                        AccountNumber:
+                          type: string
+                        LastFourDigits:
+                          type: string
+                        Balance:
+                          type: object
+                          properties:
+                            Available:
+                              type: number
+                            Current:
+                              type: number
+                            Limit:
+                              type: string
+                        Category:
+                          type: string
+                        Type:
+                          type: string
+                        Currency:
+                          type: string
+                        Holder:
+                          type: object
+                          properties:
+                            Name:
+                              type: string
+                            Address:
+                              type: object
+                              properties:
+                                CivicAddress:
+                                  type: string
+                                City:
+                                  type: string
+                                Province:
+                                  type: string
+                                PostalCode:
+                                  type: string
+                                POBox:
+                                  type: string
+                                Country:
+                                  type: string
+                            Email:
+                              type: string
+                            PhoneNumber:
+                              type: string
+                        AccountType:
+                          type:
+                          - string
+                          - 'null'
+                          enum:
+                          - Personal
+                          - Business
+                          description: Type of account.
+                        Id:
+                          type: string
+                  Login:
+                    type: object
+                    properties:
+                      Username:
+                        type: string
+                      IsScheduledRefresh:
+                        type: boolean
+                      LastRefresh:
+                        type: string
+                      Type:
+                        type: string
+                      Id:
+                        type: string
+                  Institution:
+                    type: string
+                  RequestId:
+                    type: string
         '202':
-          description: Still processing.
+          description: Operation Pending
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AsyncPendingResponse'
-  /GetAccountsSummary:
-    post:
-      operationId: getAccountsSummary
+                type: object
+                properties:
+                  FlinksCode:
+                    type: string
+                  Links:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        rel:
+                          type: string
+                        href:
+                          type: string
+                        example:
+                          type: string
+                  HttpStatusCode:
+                    type: integer
+                  Message:
+                    type: string
+                  RequestId:
+                    type: string
+              example:
+                FlinksCode: OPERATION_PENDING
+                Links:
+                - rel: GetAccountsSummaryAsync
+                  href: /GetAccountsSummaryAsync
+                  example: /GetAccountsSummaryAsync/077785a3-fd0f-42f7-9251-ee2ff7f3b4ff
+                HttpStatusCode: 202
+                Message: Your operation is still processing
+                RequestId: 077785a3-fd0f-42f7-9251-ee2ff7f3b4ff
+        '400':
+          description: Session Nonexistent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                  Message:
+                    type: string
+                  FlinksCode:
+                    type: string
+              example:
+                HttpStatusCode: 400
+                Message: RequestId 1df20baf-65d5-40ee-9be0-8058c13042e2 is invalid or session has ended
+                FlinksCode: SESSION_NONEXISTENT
+  /v3/{customerId}/BankingServices/GetAccountsDetailAsync/{requestId}:
+    get:
       tags:
       - Connect
-      summary: Retrieve general account summary information
-      description: Returns cardholder name (when available), balance, category, and EFT eligibility for each linked account, without full transaction history.
+      summary: Get Accounts Detail Async
+      description: Get pending requests from GetAccountsDetail.
+      operationId: getAccountsDetailAsync
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Key that grants access to the environment specified in the instance field. By default, the value is set to the toolbox environment key.
+      - name: requestId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique identifier provided after a successful request to the **/GetAccountsDetail** endpoint.
+      - name: x-api-key
+        in: header
+        schema:
+          type: string
+        description: Security feature that grants access to this endpoint, but it must be enabled by Flinks. Please contact your Flinks representative to activate it.
+      - name: Content-Type
+        in: header
+        required: true
+        description: Content type of the request.
+        schema:
+          type: string
+          enum:
+          - application/json
+          default: application/json
+          example: application/json
+      - name: Accept
+        in: header
+        required: true
+        description: Acceptable response media type.
+        schema:
+          type: string
+          default: application/json
+          example: application/json
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  Accounts:
+                    type: array
+                    description: Array containing detailed information about each linked account.
+                    items:
+                      type: object
+                      properties:
+                        Id:
+                          type: string
+                          description: Unique identifier for the account.
+                        Title:
+                          type: string
+                          description: Display name of the account.
+                        AccountNumber:
+                          type: string
+                          description: Full account number.
+                        LastFourDigits:
+                          type: string
+                          description: Last four digits of the account number.
+                        TransitNumber:
+                          type: string
+                          description: Transit or routing number for the account.
+                        InstitutionNumber:
+                          type: string
+                          description: Institution number for the bank.
+                        Balance:
+                          type: object
+                          description: Account balance information.
+                          properties:
+                            Available:
+                              type: number
+                              description: Available balance in the account.
+                            Current:
+                              type: number
+                              description: Current balance in the account.
+                            Limit:
+                              type: string
+                              description: Credit limit or overdraft limit.
+                        Category:
+                          type: string
+                          description: Category of the account.
+                        Type:
+                          type: string
+                          description: Type of account.
+                        Currency:
+                          type: string
+                          description: Currency code.
+                        Holder:
+                          type: object
+                          description: Account holder information.
+                          properties:
+                            Name:
+                              type: string
+                              description: Account holder name.
+                            Address:
+                              type: object
+                              description: Account holder address.
+                              properties:
+                                CivicAddress:
+                                  type: string
+                                  description: Street address.
+                                City:
+                                  type: string
+                                  description: City name.
+                                Province:
+                                  type: string
+                                  description: Province/State code.
+                                PostalCode:
+                                  type: string
+                                  description: Postal/ZIP code.
+                                POBox:
+                                  type:
+                                  - string
+                                  - 'null'
+                                  description: P.O. Box number if applicable.
+                                Country:
+                                  type: string
+                                  description: Country code.
+                            Email:
+                              type: string
+                              description: Account holder email.
+                            PhoneNumber:
+                              type: string
+                              description: Account holder phone number.
+                        Transactions:
+                          type: array
+                          description: Array of transaction records for the account.
+                          items:
+                            type: object
+                            properties:
+                              Id:
+                                type: string
+                                description: Unique identifier for the transaction.
+                              Date:
+                                type: string
+                                description: Transaction date.
+                              Description:
+                                type: string
+                                description: Description of the transaction.
+                              Debit:
+                                type:
+                                - number
+                                - 'null'
+                                description: Debit amount if applicable.
+                              Credit:
+                                type:
+                                - number
+                                - 'null'
+                                description: Credit amount if applicable.
+                              Balance:
+                                type: number
+                                description: Account balance after this transaction.
+                        AccountType:
+                          type:
+                          - string
+                          - 'null'
+                          enum:
+                          - Personal
+                          - Business
+                          description: Type of account.
+                  InstitutionName:
+                    type: string
+                    description: Name of the financial institution.
+                  Login:
+                    type: object
+                    description: Login information.
+                    properties:
+                      Username:
+                        type: string
+                        description: Login username.
+                      IsScheduledRefresh:
+                        type: boolean
+                        description: Indicates if scheduled refresh is enabled.
+                      LastRefresh:
+                        type: string
+                        description: Timestamp of last data refresh.
+                      Type:
+                        type: string
+                        description: Login type.
+                      Id:
+                        type: string
+                        description: Unique login identifier.
+                  InstitutionId:
+                    type: integer
+                    description: Numeric identifier for the financial institution.
+                  Institution:
+                    type: string
+                    description: Institution name or code.
+                  RequestId:
+                    type: string
+                    description: Unique request identifier.
+              example:
+                HttpStatusCode: 200
+                Accounts:
+                - Transactions:
+                  - Date: '2025-01-31'
+                    Code: null
+                    Description: PAYROLL - Stripe Paycheck
+                    Debit: 1000.4
+                    Credit: 1500.25
+                    Balance: 5105.6
+                    Id: 94584aed-7c98-42a4-9836-9f8557db63f5
+                  - Date: '2025-01-30'
+                    Code: null
+                    Description: Credit Card Payment
+                    Debit: 150
+                    Credit: 100
+                    Balance: 3605
+                    Id: c2fb949a-86aa-470f-9a76-deb10d7c2b57
+                  TransitNumber: '12347'
+                  InstitutionNumber: '777'
+                  OverdraftLimit: 100.5
+                  Title: Chequing Account
+                  AccountNumber: '7641238'
+                  LastFourDigits: null
+                  Balance:
+                    Available: 5405.5
+                    Current: 5105.5
+                    Limit: 5105.5
+                  Category: Operations
+                  Type: Chequing
+                  Currency: CAD
+                  Holder:
+                    Name: Testing
+                    Address:
+                      CivicAddress: 25 york street
+                      City: TOR
+                      Province: 'ON'
+                      PostalCode: M5J 2V5
+                      POBox: null
+                      Country: CA
+                    Email: test_user1@nomail.com
+                    PhoneNumber: '9051234567'
+                  AccountType: null
+                  Id: 27a9ffa0-c6b9-4cc6-9eaa-aa9efa07a889
+                InstitutionName: FlinksCapital
+                Login:
+                  Username: chat_gpt
+                  IsScheduledRefresh: false
+                  LastRefresh: '2025-01-31T17:40:54.569261'
+                  Type: Personal
+                  Id: 5602459c-f6d0-4ca0-6750-08dccdcadcc0
+                InstitutionId: 14
+                Institution: FlinksCapital
+                RequestId: 22178382-31ee-485c-a750-c20929b6a344
+        '202':
+          description: Operation Pending
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  FlinksCode:
+                    type: string
+                    description: 'Flinks-specific code: `OPERATION_PENDING`.'
+                  Links:
+                    type: array
+                    description: Links to async endpoint to check status.
+                    items:
+                      type: object
+                      properties:
+                        rel:
+                          type: string
+                          description: Relationship type of the link.
+                        href:
+                          type: string
+                          description: Endpoint path.
+                        example:
+                          type: string
+                          description: Example value.
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  Message:
+                    type: string
+                    description: 'Status message: "Your operation is still processing".'
+                  RequestId:
+                    type: string
+                    description: Unique request identifier.
+              example:
+                FlinksCode: OPERATION_PENDING
+                Links:
+                - rel: GetAccountsDetailAsync
+                  href: /GetAccountsDetailAsync
+                  example: /GetAccountsDetailAsync/077785a3-fd0f-42f7-9251-ee2ff7f3b4ff
+                HttpStatusCode: 202
+                Message: Your operation is still processing
+                RequestId: 077785a3-fd0f-42f7-9251-ee2ff7f3b4ff
+        '400':
+          description: Session Nonexistent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  Message:
+                    type: string
+                    description: Error message describing the issue.
+                  FlinksCode:
+                    type: string
+                    description: 'Flinks-specific error code: `SESSION_NONEXISTENT`.'
+              example:
+                HttpStatusCode: 400
+                Message: RequestId 1df20baf-65d5-40ee-9be0-8058c13042e2 is invalid or session has ended
+                FlinksCode: SESSION_NONEXISTENT
+  /v3/{customerId}/BankingServices/GetMFAQuestions/{loginId}:
+    get:
+      tags:
+      - Connect
+      summary: Get MFA Questions
+      description: Retrieve the multi-factor authentication (MFA) questions associated with a user's account.
+      operationId: getMfaQuestions
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID provided by Flinks.
+      - name: loginId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique identifier that represents a specific user.
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Message:
+                    type: string
+                    description: Status message indicating the result of the request.
+                  Questions:
+                    type: array
+                    description: Array of MFA question objects.
+                    items:
+                      type: object
+                      properties:
+                        Question:
+                          type: string
+                          description: The security question text.
+              example:
+                Message: SUCCESS
+                Questions:
+                - Question: What shape do people like most?
+                - Question: What is the best country on earth?
+        '400':
+          description: Invalid Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  Message:
+                    type: string
+                    description: Error message describing the issue.
+                  FlinksCode:
+                    type: string
+                    description: 'Flinks-specific error code: INVALID_REQUEST.'
+              example:
+                HttpStatusCode: 400
+                Message: The login 'bb8b8569-3bfc-43c1-ae31-08d6de7f1675' is invalid.
+                FlinksCode: INVALID_REQUEST
+  /v3/{customerId}/BankingServices/GetNightlyRefreshStatus:
+    get:
+      tags:
+      - Connect
+      summary: Get Nightly Refresh Status
+      description: Troubleshoot nightly refreshes and see ineligible accounts.
+      operationId: getNightlyRefreshStatus
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID provided by Flinks.
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+          default: Bearer <API_Secret>
+        description: Contains the Bearer Token (API secret key) that's provided by Flinks.
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  IneligibleCards:
+                    type: array
+                    description: Array of cards that are not eligible for nightly refresh.
+                    items:
+                      type: object
+                      properties:
+                        LoginId:
+                          type: string
+                          description: Unique identifier for the user's account.
+                        LastRefreshDate:
+                          type: string
+                          description: Date and time of the last refresh attempt.
+                        LastRefreshState:
+                          type: string
+                          description: State of the last refresh attempt.
+                        LastRefreshErrorCode:
+                          type:
+                          - string
+                          - 'null'
+                          description: Error code from the last refresh attempt, if applicable.
+              example:
+                HttpStatusCode: 200
+                IneligibleCards:
+                - LoginId: d12c531b-9622-4477-38c5-08d779b6f27e
+                  LastRefreshDate: '2020-06-18T03:26:34.6854364'
+                  LastRefreshState: AnsweringSecurityChallenge
+                  LastRefreshErrorCode: null
+                Message: The login 'bb8b8569-3bfc-43c1-ae31-08d6de7f1675' is invalid.
+                FlinksCode: INVALID_REQUEST
+  /v3/{customerId}/BankingServices/Institutions/RoutingNumber/{routingNumber}:
+    get:
+      tags:
+      - Connect
+      summary: Get Institution by Routing Number
+      description: Returns the details of the institution corresponding to the routing number.
+      operationId: getInstitutionByRoutingNumber
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID provided by Flinks.
+      - name: routingNumber
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Routing Number for the Institution details to be accessed.
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Id:
+                    type: integer
+                    description: Unique identifier for the institution.
+                  Localizations:
+                    type: array
+                    description: Localized information for the institution.
+                    items:
+                      type: object
+                      properties:
+                        Language:
+                          type: string
+                          description: Language code.
+                        Name:
+                          type: string
+                          description: Localized name of the institution.
+                        Urls:
+                          type: array
+                          description: URLs associated with the institution.
+                          items:
+                            type: object
+                            properties:
+                              Type:
+                                type: string
+                                description: Type of URL.
+                              Url:
+                                type: string
+                                description: The URL.
+                  Status:
+                    type: string
+                    description: Status of the institution.
+                  Country:
+                    type: string
+                    description: Country code.
+                  RoutingNumbers:
+                    type: array
+                    description: List of all routing numbers associated with the institution.
+                    items:
+                      type: string
+              example:
+                Id: 20
+                Localizations:
+                - Language: en
+                  Name: Chase Bank
+                  Urls:
+                  - Type: Main
+                    Url: https://www.chase.com/
+                Status: Enabled
+                Country: US
+                RoutingNumbers:
+                - '071000770'
+                - '072413201'
+                - 065000029
+                - 071901141
+                - '111100022'
+                - 043202409
+                - '311972788'
+                - '121143257'
+                - '021000021'
+                - '322271627'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  Message:
+                    type: string
+                    description: Error message indicating no institution was found.
+              example:
+                HttpStatusCode: 404
+                Message: 'No institution was found with the Routing Number: 322271622'
+  /v3/{customerId}/BankingServices/SetScheduledRefresh:
+    patch:
+      tags:
+      - Connect
+      summary: Set Scheduled Refresh
+      description: Enable or disable nightly refreshes for a specific account.
+      operationId: setScheduledRefresh
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID provided by Flinks.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RequestIdBody'
+              type: object
+              required:
+              - isActivated
+              properties:
+                loginId:
+                  type: string
+                  description: Access Token that's associated with a customer account.
+                isActivated:
+                  type: boolean
+                  default: false
+                  description: Enabled or disabled (true or false).
+              example:
+                isActivated: false
       responses:
         '200':
-          description: Account summary returned.
+          description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccountsResponse'
-        '202':
-          description: Processing; poll /GetAccountsSummaryAsync.
+                type: string
+                description: Confirmation message.
+              example: LoginId bb8b8569-3bfc-43c1-ae31-08d6decf1675 has now been activated for automatic refresh
+        '400':
+          description: Invalid Login
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AsyncPendingResponse'
-  /GetStatements:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  Message:
+                    type: string
+                    description: Error message describing the issue.
+                  FlinksCode:
+                    type: string
+                    description: 'Flinks-specific error code: INVALID_LOGIN.'
+              example:
+                HttpStatusCode: 400
+                Message: We couldn't trace the source of this request.
+                FlinksCode: INVALID_LOGIN
+  /v3/{customerId}/BankingServices/FieldMatch:
     post:
-      operationId: getStatements
       tags:
       - Connect
-      summary: Retrieve PDF bank statements
-      description: Signs up one or more connected accounts to retrieve PDF statements issued by their financial institution.
+      summary: Field Match
+      description: Verify customer identity and validate information against account data.
+      operationId: fieldMatch
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID provided by Flinks.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GetStatementsRequest'
+              type: object
+              properties:
+                loginId:
+                  type: string
+                  description: The loginId you received after successfully connecting a customer account.
+                fullName:
+                  type: string
+                  description: The user's full name.
+                firstName:
+                  type: string
+                  description: The user's first name.
+                middleName:
+                  type: string
+                  description: The user's middle name.
+                lastName:
+                  type: string
+                  description: The user's last name.
+                postalCode:
+                  type: string
+                  description: The user's postal code.
+                civicAddress:
+                  type: string
+                  description: The user's home address.
+                city:
+                  type: string
+                  description: The user's city.
+                province:
+                  type: string
+                  description: The user's province.
+                email:
+                  type: string
+                  description: The user's email address.
+                phone:
+                  type: string
+                  description: The user's phone number.
+                threshold:
+                  type: string
+                  description: A value between 0-1 that indicates the minimum threshold you require for a match.
+              example: {}
       responses:
         '200':
-          description: Statements returned.
+          description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatementsResponse'
+                type: object
+                properties:
+                  overallMatch:
+                    type: boolean
+                    description: Indicates whether the overall match meets the threshold.
+                  fieldLevelMatch:
+                    type: object
+                    description: Boolean values indicating whether each field meets the threshold.
+                    properties:
+                      fullName:
+                        type: boolean
+                        description: Whether the full name matches.
+                      phone:
+                        type: boolean
+                        description: Whether the phone number matches.
+                      email:
+                        type:
+                        - string
+                        - 'null'
+                        description: Whether the email matches (null if no data available).
+                      civicAddress:
+                        type: boolean
+                        description: Whether the civic address matches.
+                      city:
+                        type: boolean
+                        description: Whether the city matches.
+                      province:
+                        type: boolean
+                        description: Whether the province matches.
+                      postalCode:
+                        type: boolean
+                        description: Whether the postal code matches.
+                      noData:
+                        type: array
+                        description: Fields for which no data was available to compare.
+                        items:
+                          type: object
+                  overallMatchRate:
+                    type: number
+                    format: double
+                    description: The overall match rate as a decimal between 0 and 1.
+                  fieldLevelMatchRate:
+                    type: object
+                    description: Decimal values indicating the match rate for each field.
+                    properties:
+                      fullName:
+                        type: number
+                        format: double
+                        description: Match rate for the full name.
+                      phone:
+                        type: integer
+                        description: Match rate for the phone number.
+                      email:
+                        type:
+                        - string
+                        - 'null'
+                        description: Match rate for the email (null if no data available).
+                      civicAddress:
+                        type: number
+                        format: double
+                        description: Match rate for the civic address.
+                      city:
+                        type: integer
+                        description: Match rate for the city.
+                      province:
+                        type: integer
+                        description: Match rate for the province.
+                      postalCode:
+                        type: integer
+                        description: Match rate for the postal code.
+                      noData:
+                        type: array
+                        description: Fields for which no data was available to compare.
+                        items:
+                          type: object
+              example:
+                overallMatch: true
+                fieldLevelMatch:
+                  fullName: true
+                  phone: true
+                  email: null
+                  civicAddress: true
+                  city: true
+                  province: true
+                  postalCode: true
+                  noData: []
+                overallMatchRate: 0.93666667
+                fieldLevelMatchRate:
+                  fullName: 0.83
+                  phone: 1
+                  email: null
+                  civicAddress: 0.79
+                  city: 1
+                  province: 1
+                  postalCode: 1
+                  noData: []
+        '400':
+          description: Invalid Request
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Error response when the request is invalid.
 components:
-  schemas:
-    Error:
-      type: object
-      properties:
-        HttpStatusCode:
-          type: integer
-        Message:
-          type: string
-        FlinksCode:
-          type: string
-          description: Machine-readable code such as INVALID_LOGIN, DISABLED_LOGIN, or QUESTION_NOT_FOUND.
-      required:
-      - HttpStatusCode
-      - Message
-    Statement:
-      type: object
-      properties:
-        AccountId:
-          type: string
-        FileName:
-          type: string
-        Base64Content:
-          type: string
-          description: Base64-encoded PDF statement.
-    MfaChallengeResponse:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        SecurityChallenges:
-          type: array
-          items:
-            $ref: '#/components/schemas/SecurityChallenge'
-        HttpStatusCode:
-          type: integer
-          example: 203
-    AsyncPendingResponse:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        HttpStatusCode:
-          type: integer
-          example: 202
-        Message:
-          type: string
-          example: Operation is pending; poll the async endpoint.
-    SecurityChallenge:
-      type: object
-      properties:
-        Type:
-          type: string
-        Iterables:
-          type: array
-          items:
-            type: string
-        Prompt:
-          type: string
-    Transaction:
-      type: object
-      properties:
-        Date:
-          type: string
-          format: date
-        Description:
-          type: string
-        Debit:
-          type:
-          - number
-          - 'null'
-        Credit:
-          type:
-          - number
-          - 'null'
-        Balance:
-          type: number
-    GetAccountsDetailRequest:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        WithAccountIdentity:
-          type: boolean
-          default: true
-          description: Include transit / institution / account numbers.
-        WithKYC:
-          type: boolean
-          default: true
-          description: Include account-holder identity information.
-        WithTransactions:
-          type: boolean
-          default: true
-        DaysOfTransactions:
-          type: string
-          enum:
-          - Days90
-          - Days365
-        AccountsFilter:
-          type: array
-          items:
-            type: string
-        WithDetailsAndBankingStatements:
-          type: boolean
-      required:
-      - RequestId
-    Account:
-      type: object
-      properties:
-        Id:
-          type: string
-        Title:
-          type: string
-        AccountNumber:
-          type: string
-        LastFourDigits:
-          type: string
-        TransitNumber:
-          type: string
-        InstitutionNumber:
-          type: string
-        Category:
-          type: string
-        Type:
-          type: string
-        Currency:
-          type: string
-        Balance:
-          $ref: '#/components/schemas/Balance'
-        Transactions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Transaction'
-        Holder:
-          $ref: '#/components/schemas/Holder'
-    AuthorizeRequest:
-      type: object
-      properties:
-        LoginId:
-          type: string
-          format: uuid
-          description: Identifier returned by Flinks Connect after a successful login.
-        MostRecentCached:
-          type: boolean
-          default: true
-          description: Use cached data (true, recommended) or live mode (false).
-        Language:
-          type: string
-          enum:
-          - en
-          - fr
-          default: en
-        Save:
-          type: boolean
-          default: true
-        Tag:
-          type: string
-        RequestId:
-          type: string
-          format: uuid
-          description: Required when resubmitting after an MFA challenge.
-        SecurityResponses:
-          type: object
-          description: Map of MFA question prompts to arrays of user answers.
-          additionalProperties:
-            type: array
-            items:
-              type: string
-      required:
-      - LoginId
-    GetStatementsRequest:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        AccountsFilter:
-          type: array
-          items:
-            type: string
-        NumberOfStatements:
-          type: string
-          description: Number of PDF statements to retrieve (e.g. Months3, Months12).
-      required:
-      - RequestId
-    AccountsResponse:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        Accounts:
-          type: array
-          items:
-            $ref: '#/components/schemas/Account'
-        Institution:
-          type: string
-        HttpStatusCode:
-          type: integer
-          example: 200
-    StatementsResponse:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        Statements:
-          type: array
-          items:
-            $ref: '#/components/schemas/Statement'
-    RequestIdBody:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-          description: RequestId returned by /Authorize.
-      required:
-      - RequestId
-    Balance:
-      type: object
-      properties:
-        Available:
-          type: number
-        Current:
-          type: number
-        Limit:
-          type: number
-    Link:
-      type: object
-      properties:
-        rel:
-          type: string
-        href:
-          type: string
-        method:
-          type: string
-    AuthorizeResponse:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        Institution:
-          type: string
-        InstitutionId:
-          type: string
-        Login:
-          type: object
-        Links:
-          type: array
-          items:
-            $ref: '#/components/schemas/Link'
-        HttpStatusCode:
-          type: integer
-          example: 200
-    Holder:
-      type: object
-      properties:
-        Name:
-          type: string
-        Address:
-          type: object
-          properties:
-            CivicAddress:
-              type: string
-            City:
-              type: string
-            Province:
-              type: string
-            PostalCode:
-              type: string
-            Country:
-              type: string
-        Email:
-          type: string
-        PhoneNumber:
-          type: string
   securitySchemes:
-    flinks_auth_key:
+    XApiKey:
       type: apiKey
       in: header
-      name: flinks-auth-key
-      description: Short-lived (30-minute) authorize token obtained from /GenerateAuthorizeToken.
+      name: x-api-key
+      description: Optional security feature (must be enabled by Flinks). Contact your Flinks representative to activate.

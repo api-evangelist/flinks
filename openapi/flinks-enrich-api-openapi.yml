@@ -1,79 +1,2629 @@
 openapi: 3.2.0
 info:
   title: Flinks Enrich API
-  description: Representative specification of the Flinks financial data API.
-  termsOfService: https://flinks.com/terms-of-service/
+  description: 'Flinks API provides financial data connectivity, enrichment, and payment solutions.
+
+
+    ## Authentication
+
+    Endpoints require authentication using `flinks-auth-key` header (Bearer token).
+
+
+    For more information, visit: https://docs.flinks.com'
+  version: 3.0.0
   contact:
     name: Flinks Support
-    url: https://help.flinks.com/
-  version: '3.0'
+    url: https://www.flinks.com/contact/sales
+  termsOfService: https://www.flinks.com
 servers:
-- url: https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices
-  description: Flinks per-customer instance host.
+- url: https://{instance}-api.private.fin.ag
+  description: Flinks API Environment
   variables:
     instance:
       default: toolbox
-      description: Assigned instance / environment prefix (e.g. toolbox for sandbox).
-    customerId:
-      default: 00000000-0000-0000-0000-000000000000
-      description: Your Flinks customer identifier (GUID).
-security:
-- flinks_auth_key: []
+      description: The environment instance (e.g., toolbox, sandbox, production)
 tags:
 - name: Enrich
 paths:
-  /GetCategorization:
+  /v3/{customerId}/insight/login/{loginId}/attributes/{requestId}:
     post:
-      operationId: getCategorization
       tags:
       - Enrich
-      summary: Return categorized transactional data
+      summary: Attributes
+      description: Use the /Attributes endpoint to tell us the data points in your attributes package you want to retrieve.
+      operationId: attributes
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: Unique GUID provided by Flinks that grants you access to the environment specified in the instance field.
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+      - name: loginId
+        in: path
+        required: true
+        description: GUID representing end user's login ID.
+        schema:
+          type: string
+      - name: requestId
+        in: path
+        required: true
+        description: GUID representing an authorized request to the API.
+        schema:
+          type: string
+      - name: limitDays
+        in: query
+        required: false
+        description: (Optional) Includes an integer from 1 to 365 that will limit the range of transactions that will be used to calculate Attributes.
+        schema:
+          type: string
+          default: '365'
+      - name: Content-Type
+        in: header
+        required: true
+        description: Content type of the request.
+        schema:
+          type: string
+          enum:
+          - application/json
+          default: application/json
+          example: application/json
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RequestIdBody'
+              type: object
+              properties:
+                Attributes:
+                  type: object
+                  description: Object specifying which attributes to retrieve, grouped by output target.
+                  properties:
+                    Card:
+                      type: array
+                      items:
+                        type: string
+                      description: List of attribute names to return on the Card.
+                Filters:
+                  type: object
+                  description: (Optional) Filters applied to the data used for attribute calculation.
+                  properties:
+                    AccountCategory:
+                      type: array
+                      items:
+                        type: string
+                      description: List of account categories (Operations is currently the only supported value).
+                Options:
+                  type: object
+                  description: (Optional) Additional calculation options.
+                  properties:
+                    OriginCountry:
+                      type: string
+                      description: Origin country of the accounts (e.g. "ca").
+                    AccountType:
+                      type: string
+                      description: Account type to evaluate (e.g. "Personal").
+                    AttributesDetail:
+                      type: array
+                      items:
+                        type: string
+                      description: List of attributes for which the underlying transactions should be returned.
+              example:
+                Attributes:
+                  Card:
+                  - account_age_days
+                  - active_days_trend
+                  - auto_loan_payment_frequency
+                  - average_closing_balance_day_after_employer_income
+                  - average_closing_balance_day_after_government_income
+                  - average_closing_balance_day_after_income
+                  - average_closing_balance_day_of_employer_income
+                  - average_closing_balance_day_of_government_income
+                  - count_telecom_payments_current_month
+                Filters:
+                  AccountCategory:
+                  - Operations
+                Options:
+                  OriginCountry: ca
+                  AccountFilter:
+                  - 32a25824-d43a-46f1-8980-22fd6aa95d24
+                  AccountType: Personal
+                  AttributesDetail:
+                  - account_age_days
+                  - active_days_trend
+                  - auto_loan_payment_frequency
+                  - average_closing_balance_day_after_employer_income
+                  - average_closing_balance_day_after_government_income
+                  - average_closing_balance_day_after_income
+                  - average_closing_balance_day_of_employer_income
+                  - average_closing_balance_day_of_government_income
+                  - count_telecom_payments_current_month
       responses:
         '200':
-          description: Categorized transactions returned.
+          description: Result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CategorizationResponse'
+                type: object
+                properties:
+                  MostRecentTransactionDate:
+                    type: string
+                    description: Date of the most recent transaction used in the calculation (MM/DD/YYYY).
+                  FlinksAttributesProcessId:
+                    type: string
+                    description: GUID identifying the attributes calculation process.
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  Card:
+                    type: object
+                    description: 'Object containing an Id field (end user''s LoginId) and all the requested attributes (name: value), plus optional AttributesDetail.'
+                    properties:
+                      Id:
+                        type: string
+                        description: GUID representing the end user's LoginId.
+                      AttributesDetail:
+                        type: array
+                        description: Underlying transactions for the requested attributes.
+                        items:
+                          type: object
+                          properties:
+                            Attribute:
+                              type: string
+                              description: Name of the attribute the transactions relate to.
+                            Transactions:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  TransactionId:
+                                    type: string
+                                  AccountId:
+                                    type: string
+                                  Date:
+                                    type: string
+                                  Description:
+                                    type: string
+                                  Debit:
+                                    type: number
+                                  Credit:
+                                    type: number
+                                  Balance:
+                                    type: number
+                      MostRecentTransactionDate:
+                        type: string
+                        description: Date of the most recent transaction used in the calculation (MM/DD/YYYY).
+                      Country:
+                        type: string
+                        description: Origin country of the accounts.
+                  ProcessId:
+                    type: string
+                    description: GUID identifying the request process.
+                  Login:
+                    type: object
+                    description: Object representing end user's technical information.
+                    properties:
+                      IsScheduledRefresh:
+                        type: boolean
+                      LastRefresh:
+                        type: string
+                      Id:
+                        type: string
+                  RequestId:
+                    type: string
+                    description: GUID representing an authorized request to the API.
+              example:
+                MostRecentTransactionDate: 02/19/2026
+                FlinksAttributesProcessId: 7206aa18-6c89-4db7-a2ad-f69d6e8e6a72
+                HttpStatusCode: 200
+                Card:
+                  Id: b647eb14-c185-42a6-1b91-08dec54d7ce0
+                  account_age_days: 49
+                  active_days_trend: 1.14
+                  auto_loan_payment_frequency: NONE_DETECTED
+                  average_closing_balance_day_after_employer_income: 0
+                  average_closing_balance_day_after_government_income: NONE_DETECTED
+                  average_closing_balance_day_after_income: 0
+                  average_closing_balance_day_of_employer_income: 0
+                  average_closing_balance_day_of_government_income: NONE_DETECTED
+                  count_telecom_payments_current_month: 3
+                  AttributesDetail:
+                  - Attribute: count_loan_payments_previous_month
+                    Transactions:
+                    - TransactionId: e29ae272-6107-4938-90d4-0e2b7216836c
+                      AccountId: 38c21b3b-ba28-4f7c-9afb-8b1a81400c12
+                      Date: 2026/01/02
+                      Description: Pre - Authorized Payment , 736 6TH AVENUE RLS / LOY
+                      Debit: 5180.14
+                      Balance: 5363.26
+                  - Attribute: count_telecom_payments_current_month
+                    Transactions:
+                    - TransactionId: ddb389f6-2dcc-42e4-a3cf-22f14ef7e44a
+                      AccountId: 78f84600-90f3-4404-aa16-c0b5d59e2097
+                      Date: 2026/02/11
+                      Description: SENT ROGERS TOGETHER WITH SHA FOR TELEPHONE / ONLINE BANKING , INTERAC ETRNSFR ACCOUNT 031249
+                      Debit: 125.85
+                      Balance: 7096.03
+                    - TransactionId: a6db5674-a876-4a8c-ab61-f0c99905516b
+                      AccountId: 78f84600-90f3-4404-aa16-c0b5d59e2097
+                      Date: 2026/02/11
+                      Description: Transfer of Funds , ROGERS ( 11 DIGIT BANK PAY
+                      Debit: 276.5
+                      Balance: 7221.88
+                    - TransactionId: 823dea4d-bbea-48d3-98df-dca2d6f970c5
+                      AccountId: 78f84600-90f3-4404-aa16-c0b5d59e2097
+                      Date: 2026/02/11
+                      Description: Transfer of Funds , ROGERS ( 11 DIGIT BANK PAY
+                      Debit: 69.68
+                      Balance: 7498.38
+                  MostRecentTransactionDate: 02/19/2026
+                  Country: ca
+                ProcessId: f04104bf-4309-4cf0-a04e-18b1b799b2e6
+                Login:
+                  IsScheduledRefresh: false
+                  LastRefresh: '2026-06-01T07:38:03'
+                  Id: 5ce21916-1ab1-41f0-a213-6be85220c2e3
+                RequestId: 140b896f-a486-4708-98eb-5a9b6c79e81a
+        '202':
+          description: Operation Pending
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  FlinksCode:
+                    type: string
+                  HttpStatusCode:
+                    type: integer
+                  Message:
+                    type: string
+                  RequestId:
+                    type: string
+  /v3/{customerId}/BankingServices/Categories/{CountryCode}:
+    get:
+      tags:
+      - Enrich
+      summary: Categories
+      description: The /Categories endpoint returns an up-to-date list of all categories that can be applied to your customers' transactional data in either Canada or the US.
+      operationId: categories
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: Unique GUID provided by Flinks that grants you access to the environment specified in the instance field.
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+      - name: CountryCode
+        in: path
+        required: true
+        description: Identifies the country of the library that you wish to return. Accepted values are CA for Canada or US for the United States.
+        schema:
+          type: string
+          default: CA
+      - name: Authorization
+        in: header
+        description: Contains the Bearer Token (the API secret key that Flinks provides you with).
+        schema:
+          type: string
+          default: Bearer {API Secret}
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    PrimaryCategoryName:
+                      type: string
+                    Description:
+                      type: string
+                    SubCategories:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          SubCategoryName:
+                            type: string
+                          Description:
+                            type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                  Message:
+                    type: string
+                  FlinksCode:
+                    type: string
+  /v3/{customerId}/attributes/library:
+    get:
+      tags:
+      - Enrich
+      summary: Library (Consumer)
+      description: This endpoint will return a list of all currently available Attributes in our Attributes Library for Consumers.
+      operationId: consumerLibrary
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: Unique GUID provided by Flinks that grants you access to the environment specified in the instance field.
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+      - name: Authorization
+        in: header
+        description: Contains the Bearer Token (the API secret key that Flinks provides you with).
+        schema:
+          type: string
+          default: Bearer {API Secret}
+      responses:
+        '200':
+          description: Partial Attributes Library Request (Consumer)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Category:
+                      type: string
+                    Attributes:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          Name:
+                            type: string
+                          Description:
+                            type: string
+        '400':
+          description: Result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: object
+  /v3/{customerId}/attributes/library/business:
+    get:
+      tags:
+      - Enrich
+      summary: Library (Business)
+      description: This endpoint will return a list of all currently available Attributes in our Attributes Library for Business.
+      operationId: businessLibrary
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: Unique GUID provided by Flinks that grants you access to the environment specified in the instance field.
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+      - name: Authorization
+        in: header
+        description: Contains the Bearer Token (the API secret key that Flinks provides you with).
+        schema:
+          type: string
+          default: Bearer {API Secret}
+      responses:
+        '200':
+          description: Partial Attributes Library Request (Business)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Category:
+                      type: string
+                    Attributes:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          Name:
+                            type: string
+                          Description:
+                            type: string
+        '400':
+          description: Result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: object
+  /v3/{customerId}/insight/login/{loginId}/attributes/{requestId}/GetUserAnalysisAttributes:
+    get:
+      tags:
+      - Enrich
+      summary: Get User Analysis Attributes
+      description: This endpoint will provide you with all Credit Risk use-case attributes. Please refer to our Quickstart guide for further information on the use-cases / when to use this specific endpoint.
+      operationId: getUserAnalysisAttributes
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID representing your customer ID.
+      - name: loginId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: GUID representing end user's login ID.
+      - name: requestId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: GUID representing an authorized request to the API.
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  Card:
+                    type: object
+                    description: Object containing an Id field and all the requested attributes.
+                    properties:
+                      Id:
+                        type: string
+                        description: Unique identifier for the card.
+                      AttributesDetail:
+                        type: array
+                        description: Array of detailed attribute information including supporting transactions for each attribute.
+                        items:
+                          type: object
+                  Login:
+                    type: object
+                    description: Object containing login metadata.
+                    properties:
+                      Username:
+                        type: string
+                        description: The username associated with the login.
+                      IsScheduledRefresh:
+                        type: boolean
+                        description: Whether this is a scheduled refresh.
+                      LastRefresh:
+                        type: string
+                        description: Timestamp of the last refresh.
+                      Type:
+                        type: string
+                        description: Type of account.
+                      Id:
+                        type: string
+                        description: The login ID.
+                  RequestId:
+                    type: string
+                    description: Unique identifier for the request.
+              example:
+                HttpStatusCode: 200
+                Card:
+                  Id: 367046b0-7699-483d-94c2-08d9a3d5c70f
+                  auto_loan_deposits_frequency_biz: NONE_DETECTED
+                  auto_loan_deposits_trend_biz: 0
+                  auto_loan_payments_frequency_biz: Monthly
+                  auto_loan_payments_trend_biz: 0.94
+                  average_monthly_auto_loan_payments_biz: 532.54
+                  sum_auto_loan_payments_365_days_biz: 6000
+                  average_monthly_operating_income_biz: 6443.79
+                  sum_operating_income_365_days_biz: 72600
+                  average_monthly_payroll_deposits_biz: 5485.21
+                  sum_payroll_deposits_365_days_biz: 61800
+                  AttributesDetail:
+                  - Attribute: count_auto_loan_payments_10_months_ago_biz
+                    Transactions:
+                    - TransactionId: 8c0eb24f-f395-48d3-9bf2-d170a6793e57
+                      AccountId: 249516f6-d40d-4d86-b064-dbb4e0a59688
+                      Date: 2021/01/08
+                      Description: FORD CREDIT CA APY
+                      Debit: 500
+                      Credit: null
+                      Balance: 11550
+                Login:
+                  Username: multiple_employers
+                  IsScheduledRefresh: false
+                  LastRefresh: '2021-11-10T15:01:27.7756841'
+                  Type: Personal
+                  Id: 367046b0-7699-483d-94c2-08d9a3d5c70f
+                RequestId: b0ad6069-b40c-4c7e-aead-91c849d0b9f1
+        '202':
+          description: Operation Pending
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  FlinksCode:
+                    type: string
+                    description: Flinks-specific status code.
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response (202).
+                  Message:
+                    type: string
+                    description: Message indicating the operation is still processing.
+                  RequestId:
+                    type: string
+                    description: Unique identifier for the request.
+              example:
+                FlinksCode: OPERATION_PENDING
+                HttpStatusCode: 202
+                Message: Your operation is still processing
+                RequestId: e39262e3-c1ea-4d19-a331-f141dfdd29fd
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Message:
+                    type: string
+                    description: Error message indicating the customer ID is not authorized for the login ID.
+              example:
+                Message: Given customer id is not authorized for the login id
+  /v3/{customerId}/insight/login/{loginId}/attributes/{requestId}/GetAllAttributes:
+    get:
+      tags:
+      - Enrich
+      summary: Get All Attributes
+      description: Use the /GetAllAttributes endpoint to return a list of all customer attributes (only available to Flinks clients who take a Tier 2 or above package).
+      operationId: getAllAttributes
+      parameters:
+      - name: x-api-key
+        in: header
+        schema:
+          type: string
+        description: Security feature that grants access to this endpoint.
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID provided by Flinks that grants you access to the environment specified in the instance field.
+      - name: loginId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: GUID representing end user's login ID.
+      - name: requestId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: GUID representing an authorized request to the API.
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              example:
+                HttpStatusCode: 200
+                Card:
+                  Id: 1987302e-498c-48d6-a0c3-3e6061c78235
+                  active_days_trend: 1.25
+                  active_days_trend_simple: INCREASING
+                  average_monthly_active_days: 11.18
+                  count_active_days: 129
+                  count_active_days_30_days: 14
+                  credit_activity_trend_simple: DECREASING
+                  debit_activity_trend_simple: DECREASING
+                  overall_activity_trend_simple: DECREASING
+                  unusual_recent_activity: 0.71
+                  unusual_recent_credit_activity: 0.68
+                  unusual_recent_debit_activity: 0.73
+                  account_age: 11
+                  account_age_90_days: 90
+                  account_age_days: 346
+                  average_monthly_free_cash_flow: 334.96
+                  auto_loan_payment_average: 0.0
+                  auto_loan_payment_frequency: NONE_DETECTED
+                  auto_loan_trend: 0.0
+                  auto_loan_trend_simple: NONE_DETECTED
+                  average_monthly_auto_loan_payments: 0.0
+                  average_monthly_auto_loan_payments_complex: 0.0
+                  count_auto_loan_payments_10_months_ago: 0
+                  count_auto_loan_payments_11_months_ago: 0
+                  count_auto_loan_payments_12_months_ago: 0
+                  count_auto_loan_payments_180_days: 0
+                  count_auto_loan_payments_2_months_ago: 0
+                  count_auto_loan_payments_30_days: 0
+                  count_auto_loan_payments_365_days: 0
+                  count_auto_loan_payments_3_months_ago: 0
+                  count_auto_loan_payments_4_months_ago: 0
+                  count_auto_loan_payments_5_months_ago: 0
+                  count_auto_loan_payments_60_days: 0
+                  count_auto_loan_payments_6_months_ago: 0
+                  count_auto_loan_payments_7_months_ago: 0
+                  count_auto_loan_payments_8_months_ago: 0
+                  count_auto_loan_payments_90_days: 0
+                  count_auto_loan_payments_9_months_ago: 0
+                  count_auto_loan_payments_current_month: 0
+                  count_auto_loan_payments_previous_month: 0
+                  last_2_auto_loan_payments_dates: NONE_DETECTED
+                  sum_auto_loan_payments: 0.0
+                  sum_auto_loan_payments_10_months_ago: 0.0
+                  sum_auto_loan_payments_11_months_ago: 0.0
+                  sum_auto_loan_payments_12_months_ago: 0.0
+                  sum_auto_loan_payments_180_days: 0.0
+                  sum_auto_loan_payments_2_months_ago: 0.0
+                  sum_auto_loan_payments_30_days: 0.0
+                  sum_auto_loan_payments_365_days: 0.0
+                  sum_auto_loan_payments_3_months_ago: 0.0
+                  sum_auto_loan_payments_4_months_ago: 0.0
+                  sum_auto_loan_payments_5_months_ago: 0.0
+                  sum_auto_loan_payments_60_days: 0.0
+                  sum_auto_loan_payments_6_months_ago: 0.0
+                  sum_auto_loan_payments_7_months_ago: 0.0
+                  sum_auto_loan_payments_8_months_ago: 0.0
+                  sum_auto_loan_payments_90_days: 0.0
+                  sum_auto_loan_payments_9_months_ago: 0.0
+                  sum_auto_loan_payments_current_month: 0.0
+                  sum_auto_loan_payments_previous_month: 0.0
+                  average_closing_balance_2_days_after_employer_a_income: 2103.74
+                  average_closing_balance_2_days_after_employer_b_income: NONE_DETECTED
+                  average_closing_balance_2_days_after_employer_income: 1979.94
+                  average_closing_balance_2_days_after_employer_other_income: NONE_DETECTED
+                  average_closing_balance_2_days_after_government_income: 2517.18
+                  average_closing_balance_2_days_after_last_4_employer_income: 8602.38
+                  average_closing_balance_2_days_after_last_4_government_income: NOT_ENOUGH_DATA
+                  average_closing_balance_day_after_employer_a_income: 2940.43
+                  average_closing_balance_day_after_employer_b_income: NONE_DETECTED
+                  average_closing_balance_day_after_employer_income: 2019.47
+                  average_closing_balance_day_after_employer_other_income: NONE_DETECTED
+                  average_closing_balance_day_after_government_income: 2517.18
+                  average_closing_balance_day_after_income: 3106.06
+                  average_closing_balance_day_after_last_4_employer_a_income: 2537.26
+                  average_closing_balance_day_after_last_4_employer_b_income: NOT_ENOUGH_DATA
+                  average_closing_balance_day_after_last_4_employer_income: 8602.38
+                  average_closing_balance_day_after_last_4_employer_other_income: NOT_ENOUGH_DATA
+                  average_closing_balance_day_after_last_4_government_income: NOT_ENOUGH_DATA
+                  average_closing_balance_day_after_last_6_employer_a_income: 2736.36
+                  average_closing_balance_day_after_last_6_employer_b_income: NOT_ENOUGH_DATA
+                  average_closing_balance_day_after_last_6_employer_other_income: NOT_ENOUGH_DATA
+                  average_closing_balance_day_after_last_6_government_income: NOT_ENOUGH_DATA
+                  average_closing_balance_day_of_employer_a_income: 2833.1
+                  average_closing_balance_day_of_employer_b_income: NONE_DETECTED
+                  average_closing_balance_day_of_employer_income: 2122.05
+                  average_closing_balance_day_of_employer_other_income: NONE_DETECTED
+                  average_closing_balance_day_of_government_income: 2760.58
+                  average_closing_balance_day_of_income: 3137.15
+                  average_closing_balance_day_of_last_4_employer_a_income: 2361.21
+                  average_closing_balance_day_of_last_4_employer_b_income: NOT_ENOUGH_DATA
+                  average_closing_balance_day_of_last_4_employer_income: 8609.88
+                  average_closing_balance_day_of_last_4_employer_other_income: NOT_ENOUGH_DATA
+                  average_closing_balance_day_of_last_4_government_income: NOT_ENOUGH_DATA
+                  average_closing_balance_day_of_last_6_employer_a_income: 2518.64
+                  average_closing_balance_day_of_last_6_employer_b_income: NOT_ENOUGH_DATA
+                  average_closing_balance_day_of_last_6_employer_other_income: NOT_ENOUGH_DATA
+                  average_closing_balance_day_of_last_6_government_income: NOT_ENOUGH_DATA
+                  balance_90_days_ago: 507.81
+                  balance_current: 3880.28
+                  balance_max: 38780.97
+                  balance_min: 105.16
+                  balance_trend: 1.51
+                  balance_trend_simple: INCREASING
+                  closing_balance_2_days_after_last_employer_a_deposit: 6717.76
+                  closing_balance_2_days_after_last_employer_b_deposit: LAST_DEPOSIT_TOO_RECENT_TO_CALCULATE
+                  closing_balance_2_days_after_last_employer_income_deposit: 6717.76
+                  closing_balance_2_days_after_last_employer_other_deposit: LAST_DEPOSIT_TOO_RECENT_TO_CALCULATE
+                  closing_balance_2_days_after_last_government_income_deposit: 2786.27
+                  closing_balance_day_after_last_employer_a_deposit: 6717.76
+                  closing_balance_day_after_last_employer_b_deposit: LAST_DEPOSIT_TOO_RECENT_TO_CALCULATE
+                  closing_balance_day_after_last_employer_income_deposit: 6717.76
+                  closing_balance_day_after_last_employer_other_deposit: LAST_DEPOSIT_TOO_RECENT_TO_CALCULATE
+                  closing_balance_day_after_last_government_income_deposit: 2786.27
+                  closing_balance_day_after_penultimate_employer_a_income: 1572.59
+                  closing_balance_day_after_penultimate_employer_b_income: NONE_DETECTED
+                  closing_balance_day_after_penultimate_employer_other_income: NONE_DETECTED
+                  closing_balance_day_after_penultimate_government_income: 2248.09
+                  closing_balance_day_of_last_employer_a_deposit: 6717.76
+                  closing_balance_day_of_last_employer_b_deposit: LAST_DEPOSIT_TOO_RECENT_TO_CALCULATE
+                  closing_balance_day_of_last_employer_income_deposit: 6717.76
+                  closing_balance_day_of_last_employer_other_deposit: LAST_DEPOSIT_TOO_RECENT_TO_CALCULATE
+                  closing_balance_day_of_last_government_income_deposit: 3273.07
+                  closing_balance_day_of_penultimate_employer_a_income: 2072.59
+                  closing_balance_day_of_penultimate_employer_b_income: NONE_DETECTED
+                  closing_balance_day_of_penultimate_employer_other_income: NONE_DETECTED
+                  closing_balance_day_of_penultimate_government_income: 2248.09
+                  count_days_negative_balance_90_days: 0
+                  average_closing_balance_day_of_last_6_employment_insurance_income: NOT_ENOUGH_DATA
+                  average_closing_balance_day_after_last_6_employment_insurance_income: NOT_ENOUGH_DATA
+                  average_closing_balance_day_of_last_4_employment_insurance_income: NOT_ENOUGH_DATA
+                  average_closing_balance_day_after_last_4_employment_insurance_income: NOT_ENOUGH_DATA
+                  closing_balance_day_of_last_employment_insurance_income: NONE_DETECTED
+                  closing_balance_day_after_last_employment_insurance_income: NONE_DETECTED
+                  closing_balance_day_after_penultimate_employment_insurance_income: LAST_DEPOSIT_TOO_RECENT_TO_CALCULATE
+                  minimum_negative_balance_no_nsf_last_90_days: NO_NEGATIVE_BALANCE_DETECTED
+                  average_daily_balance_last_30_days: 2393.23
+                  average_daily_balance: 1587.42
+                  average_monthly_bank_fees: 9.27
+                  average_monthly_bank_fees_complex: 9.6
+                  bank_fees_average: 7.64
+                  bank_fees_frequency: Monthly
+                  bank_fees_trend: 0.43
+                  bank_fees_trend_simple: DECREASING
+                  count_bank_fees_10_months_ago: 1
+                  count_bank_fees_11_months_ago: 1
+                  count_bank_fees_12_months_ago: 0
+                  count_bank_fees_180_days: 9
+                  count_bank_fees_2_months_ago: 2
+                  count_bank_fees_30_days: 1
+                  count_bank_fees_365_days: 14
+                  count_bank_fees_3_months_ago: 1
+                  count_bank_fees_4_months_ago: 2
+                  count_bank_fees_5_months_ago: 2
+                  count_bank_fees_60_days: 3
+                  count_bank_fees_6_months_ago: 1
+                  count_bank_fees_7_months_ago: 1
+                  AttributesDetail:
+                  - Attribute: average_closing_balance_2_days_after_last_4_government_income
+                    Transactions:
+                    - TransactionId: 2e9e3ea2-c918-4302-8dc1-738672c4e177
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-04-09'
+                      Description: 3903214 CANADA
+                      Credit: 2200.48
+                      Balance: 3773.07
+                    - TransactionId: d8d668eb-77ba-4b60-8e1a-375ba0e669cc
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-03-26'
+                      Description: 3903214 CANADA
+                      Credit: 1702.11
+                      Balance: 3348.09
+                  - Attribute: average_closing_balance_day_after_last_4_government_income
+                    Transactions:
+                    - TransactionId: 2e9e3ea2-c918-4302-8dc1-738672c4e177
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-04-09'
+                      Description: 3903214 CANADA
+                      Credit: 2200.48
+                      Balance: 3773.07
+                    - TransactionId: d8d668eb-77ba-4b60-8e1a-375ba0e669cc
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-03-26'
+                      Description: 3903214 CANADA
+                      Credit: 1702.11
+                      Balance: 3348.09
+                  - Attribute: average_closing_balance_day_after_last_6_government_income
+                    Transactions:
+                    - TransactionId: 2e9e3ea2-c918-4302-8dc1-738672c4e177
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-04-09'
+                      Description: 3903214 CANADA
+                      Credit: 2200.48
+                      Balance: 3773.07
+                    - TransactionId: d8d668eb-77ba-4b60-8e1a-375ba0e669cc
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-03-26'
+                      Description: 3903214 CANADA
+                      Credit: 1702.11
+                      Balance: 3348.09
+                Login:
+                  Username: multiple_employers
+                  IsScheduledRefresh: false
+                  LastRefresh: '2021-11-10T15:01:27.7756841'
+                  Type: Personal
+                  Id: 367046b0-7699-483d-94c2-08d9a3d5c70f
+                RequestId: b0ad6069-b40c-4c7e-aead-91c849d0b9f1
+              schema:
+                type: object
+                properties:
+                  Card:
+                    type: object
+                    description: 'Object containing an id field (end user''s LoginId) and all the requested attributes (name: value).'
+                  Login:
+                    type: object
+                    description: Object representing some end user's technical information such as the LoginId.
+                  RequestId:
+                    type: string
+                    description: GUID representing an authorized request to the API.
+                  AttributesDetails:
+                    type: object
+                    description: Object containing the fields for attribute details.
+        '202':
+          description: Operation Pending
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  FlinksCode:
+                    type: string
+                  HttpStatusCode:
+                    type: integer
+                  Message:
+                    type: string
+                  RequestId:
+                    type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Message:
+                    type: string
+  /v3/{customerId}/insight/login/{loginId}/attributes/{requestId}/GetAllBusinessAttributes:
+    get:
+      tags:
+      - Enrich
+      summary: Get All Business Attributes
+      description: This endpoint will provide you with all the currently available Business Attributes.
+      operationId: getAllBusinessAttributes
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID provided by Flinks that grants you access to the environment.
+      - name: loginId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: GUID representing end user's login ID.
+      - name: requestId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: GUID representing an authorized request to the API.
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                  Card:
+                    type: object
+                    description: 'Object containing an Id field (end user''s loginId) and all the available business attributes (name: value pairs).'
+                  Login:
+                    type: object
+                    description: Object representing end user's technical information.
+                  RequestId:
+                    type: string
+                    description: GUID representing an authorized request to the API.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                  Message:
+                    type: string
+                  FlinksCode:
+                    type: string
+        '401':
+          description: Unauthorized
+  /v3/{customerId}/insight/login/{loginId}/attributes/{requestId}/GetBusinessAnalysisAttributes:
+    get:
+      tags:
+      - Enrich
+      summary: Get Business Analysis Attributes
+      description: This endpoint will provide you with all Business Analysis Use-Case Attributes.
+      operationId: getBusinessAnalysisAttributes
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID provided by Flinks that grants you access to the environment.
+      - name: loginId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: GUID representing end user's login ID.
+      - name: requestId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: GUID representing an authorized request to the API.
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Card:
+                    type: object
+                    description: 'Object containing an Id field (end user''s loginId) and all the requested business analysis attributes (name: value pairs).'
+                  Login:
+                    type: object
+                    description: Object representing end user's technical information.
+                  RequestId:
+                    type: string
+                    description: GUID representing an authorized request to the API.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                  Message:
+                    type: string
+                  FlinksCode:
+                    type: string
+        '401':
+          description: Unauthorized
+  /v3/{customerId}/prepayment/login/{LoginId}/{RequestId}:
+    post:
+      tags:
+      - Enrich
+      summary: Prepayment
+      description: Use this endpoint to submit additional information on a given end-user and retrieve Payment Optimization insights.
+      operationId: prepayment
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Key that grants access to the environment specified in the instance field.
+      - name: LoginId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: GUID representing end user's login ID.
+      - name: RequestId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: GUID representing an authorized request to the API.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                LoanFrequency:
+                  type: string
+                  description: Input that defines the frequency to be used in calculating the optimal days of payment.
+                  enum:
+                  - Weekly
+                  - BiWeekly
+                  - BiMonthly
+                  - Monthly
+                ExpectedRepaymentTotal:
+                  type: string
+                  description: Submitted value that represents the entire amount that will be repaid back at the end of the given duration/term.
+                FundingDate:
+                  type: string
+                  description: The date that a funding event is expected to occur. Format should be in YYYY-MM-DD.
+                Duration:
+                  type: string
+                  description: An integer corresponding with how many payments are expected to take place.
+              example:
+                LoanFrequency: Monthly
+      responses:
+        '200':
+          description: Successful Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  UserInformation:
+                    type: object
+                    description: Object containing user details.
+                  AccountsInformation:
+                    type: array
+                    items:
+                      type: object
+                    description: Array of account objects containing payment optimization details.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: object
+                    description: Error object returned when the request is invalid.
+  /v3/{customerId}/categorization/login/{loginId}/requestid/{requestId}:
+    get:
+      tags:
+      - Enrich
+      summary: Get Categorization
+      description: Returns categorized transactional data. This data is aggregated by Flinks through the /GetAccountsDetail endpoint.
+      operationId: getCategorization
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID provided by Flinks that grants you access to the environment.
+      - name: loginId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: A unique identifier that represents the login information for the customer.
+      - name: requestId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: A unique identifier that represents a successful call to the /Authorize endpoint.
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  LoginId:
+                    type: string
+                    description: Unique identifier for the end user's login.
+                  RequestId:
+                    type: string
+                    description: GUID representing an authorized request to the API.
+                  Transactions:
+                    type: array
+                    description: Array of categorized transaction records.
+                    items:
+                      type: object
+                      properties:
+                        Id:
+                          type: string
+                          description: Unique identifier for the transaction.
+                        AccountId:
+                          type: string
+                          description: Unique identifier for the account the transaction belongs to.
+                        Date:
+                          type: string
+                          format: date
+                          description: Date of the transaction (YYYY-MM-DD).
+                        Description:
+                          type: string
+                          description: Raw description of the transaction as reported by the financial institution.
+                        Code:
+                          type:
+                          - string
+                          - 'null'
+                          description: Transaction code from the financial institution, if available.
+                        Debit:
+                          type:
+                          - number
+                          - 'null'
+                          description: Debit amount (money out).
+                        Credit:
+                          type:
+                          - number
+                          - 'null'
+                          description: Credit amount (money in).
+                        Balance:
+                          type: number
+                          description: Account balance after the transaction.
+                        CategoryId:
+                          type: string
+                          description: Unique identifier for the assigned category.
+                        Category:
+                          type: string
+                          description: Primary category name (e.g., "Income", "Transfers", "Bills & Utilities").
+                        SubCategory:
+                          type: string
+                          description: Sub-category name within the primary category (e.g., "Payroll", "Telecom").
+                        Type:
+                          type: string
+                          description: Type of transaction (e.g., "Debit", "Credit", "Transfer").
+                        IsRecurring:
+                          type: boolean
+                          description: Indicates whether the transaction is part of a recurring series.
+                        Merchant:
+                          type:
+                          - string
+                          - 'null'
+                          description: Merchant name extracted from the transaction description, when identifiable.
+              example:
+                HttpStatusCode: 200
+                LoginId: a1b2c3d4-5e6f-7890-abcd-ef1234567890
+                RequestId: f9e8d7c6-b5a4-3210-9876-543210fedcba
+                Transactions:
+                - TransactionId: da4cb17a-2798-4eb0-a40a-69d3d1e1ae70
+                  AccountId: 74141696-a808-4e6d-93b6-b758cdd749e7
+                  Description: Point of Sale - Visa Debit VISA Debit RETAIL PURCHASE ATLANTIC LOTTER 215020217028
+                  Category: Entertainment
+                  SubCategory: Gambling
+                  Balance: 2793.61
+                  Debit: 10
+                  Date: '2022-05-31'
+                - TransactionId: fafc01e8-1971-4ba3-b7a4-2105c326ef69
+                  AccountId: 74141696-a808-4e6d-93b6-b758cdd749e7
+                  Description: Point of Sale - INTERAC RETAIL PURCHASE 215015119851 SP CURLYS SPORT
+                  Category: Food and Dining
+                  SubCategory: Restaurants
+                  Balance: 2803.61
+                  Debit: 9.18
+                  Date: '2022-05-30'
+                - TransactionId: 25176d2e-5f15-4d83-a104-d3d38652bf8a
+                  AccountId: 74141696-a808-4e6d-93b6-b758cdd749e7
+                  Description: Point of Sale - INTERAC MDSE RETURN 000001001663 KENT AMHERST
+                  Category: Transfers and Adjustments
+                  SubCategory: Balance Adjustment
+                  Balance: 2812.79
+                  credit: 268.03
+                  Date: '2022-05-30'
+                - TransactionId: ffb757ef-7faf-441a-86f2-a799c9338e06
+                  AccountId: 74141696-a808-4e6d-93b6-b758cdd749e7
+                  Description: Point of Sale - INTERAC RETAIL PURCHASE 214912259678 PITA PIT
+                  Category: Food and Dining
+                  SubCategory: Fast Food
+                  Balance: 2544.76
+                  Debit: 34.24
+                  Date: '2022-05-30'
+                - TransactionId: c3f3158b-909c-4969-b2e6-0d8e3139b4ce
+                  AccountId: 74141696-a808-4e6d-93b6-b758cdd749e7
+                  Description: Point of Sale - INTERAC RETAIL PURCHASE 000001034052 CIRCLE K / IRVI
+                  Category: Goods and Merchandise
+                  SubCategory: General Merchandise
+                  Balance: 2579
+                  Debit: 5.3
+                  Date: '2022-05-30'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                  Message:
+                    type: string
+                  FlinksCode:
+                    type: string
+  /v3/{customerId}/insight/login/{loginId}/attributes/{requestId}/GetCreditRiskAttributes:
+    get:
+      tags:
+      - Enrich
+      summary: Get Credit Risk Attributes
+      description: This endpoint will provide you with all Credit Risk Use-Case Attributes.
+      operationId: getCreditRiskAttributes
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID representing your customer ID.
+      - name: loginId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: GUID representing end user's login ID.
+      - name: requestId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: GUID representing an authorized request to the API.
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  Card:
+                    type: object
+                    description: Object containing an Id field, all requested credit risk attributes, and an AttributesDetail array with supporting transactions.
+                    properties:
+                      Id:
+                        type: string
+                        description: Unique identifier for the card.
+                      AttributesDetail:
+                        type: array
+                        description: Array of detailed attribute information including supporting transactions for each attribute.
+                        items:
+                          type: object
+                  Login:
+                    type: object
+                    description: Object representing end user's technical information.
+                  RequestId:
+                    type: string
+                    description: GUID representing an authorized request to the API.
+              example:
+                HttpStatusCode: 200
+                Card:
+                  Id: 367046b0-7699-483d-94c2-08d9a3d5c70f
+                  average_monthly_free_cash_flow: 334.96
+                  balance_trend_simple: INCREASING
+                  employer_name: Unknown
+                  employer_income_trend_simple: NONE_DETECTED
+                  sum_total_credits_current_month: 4525.47
+                  sum_total_credits_previous_month: 16388.11
+                  sum_total_credits_2_months_ago: 41461.75
+                  sum_total_credits_3_months_ago: 4517.42
+                  sum_total_credits_4_months_ago: 7256.69
+                  sum_total_credits_5_months_ago: 4227.87
+                  sum_total_credits_6_months_ago: 4475.84
+                  sum_total_credits_7_months_ago: 4447.21
+                  sum_total_credits_8_months_ago: 3700.8
+                  sum_total_credits_9_months_ago: 6222.78
+                  sum_total_credits_10_months_ago: 3776.11
+                  sum_total_credits_11_months_ago: 3950.19
+                  sum_total_credits_12_months_ago: 0.0
+                  average_monthly_employer_income_complex: 4665.78
+                  average_monthly_government_income_complex: 3902.59
+                  average_monthly_non_employer_income_complex: 2998.26
+                  total_deposits_trend_simple: DECREASING
+                  average_monthly_loan_payments_complex: 190.5
+                  average_monthly_auto_loan_payments_complex: 0.0
+                  average_monthly_mortgage_payments_complex: 190.5
+                  average_monthly_micro_loan_payments_complex: 0.0
+                  average_monthly_student_loan_payments_complex: 0.0
+                  average_monthly_other_loan_payments_complex: 0.0
+                  average_monthly_utility_payments_complex: 0.0
+                  average_monthly_telecom_payments_complex: 1159.67
+                  micro_lender_name: NONE_DETECTED
+                  sum_loan_payments: 2391.78
+                  average_monthly_debit: 8764.77
+                  count_nsf_90_days: 1
+                  count_reversed_payments_because_of_nsf_90_days: 0
+                  count_stop_payment_90_days: 0
+                  count_days_negative_balance_90_days: 0
+                  balance_min: 105.16
+                  account_age_days: 346
+                  sum_employer_income_current_month: 0.0
+                  sum_employer_income_previous_month: 4276.0
+                  sum_employer_income_2_months_ago: 4197.6
+                  sum_employer_income_3_months_ago: 4517.42
+                  sum_employer_income_4_months_ago: 7096.69
+                  sum_employer_income_5_months_ago: 4227.87
+                  sum_employer_income_6_months_ago: 4475.84
+                  sum_employer_income_7_months_ago: 4434.58
+                  sum_employer_income_8_months_ago: 3700.8
+                  sum_employer_income_9_months_ago: 5954.9
+                  sum_employer_income_10_months_ago: 3776.11
+                  sum_employer_income_11_months_ago: 3950.19
+                  sum_employer_income_12_months_ago: 0.0
+                  count_employer_income_current_month: 0
+                  count_employer_income_previous_month: 2
+                  count_employer_income_2_months_ago: 2
+                  count_employer_income_3_months_ago: 2
+                  count_employer_income_4_months_ago: 3
+                  count_employer_income_5_months_ago: 2
+                  count_employer_income_6_months_ago: 2
+                  count_employer_income_7_months_ago: 2
+                  count_employer_income_8_months_ago: 2
+                  count_employer_income_9_months_ago: 3
+                  count_employer_income_10_months_ago: 2
+                  count_employer_income_11_months_ago: 2
+                  count_employer_income_12_months_ago: 0
+                  sum_employer_income: 50608.0
+                  AttributesDetail:
+                  - Attribute: sum_total_credits_current_month
+                    Transactions:
+                    - TransactionId: 2e3cb553-a27e-4208-bf8b-1ab4ccd7eb3e
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-04-15'
+                      Description: INTERAC e-Transfer
+                      Credit: 1300.0
+                      Balance: 4080.28
+                    - TransactionId: 2e9e3ea2-c918-4302-8dc1-738672c4e177
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-04-09'
+                      Description: 3903214 CANADA
+                      Credit: 2200.48
+                      Balance: 3773.07
+                    - TransactionId: b6ad031b-79f8-40af-be6d-70464b30bf50
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-04-07'
+                      Description: Mobile deposit
+                      Credit: 1024.99
+                      Balance: 2072.59
+                  - Attribute: sum_total_credits_previous_month
+                    Transactions:
+                    - TransactionId: d8d668eb-77ba-4b60-8e1a-375ba0e669cc
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-03-26'
+                      Description: 3903214 CANADA
+                      Credit: 1702.11
+                      Balance: 3348.09
+                    - TransactionId: 72cfe1e6-e14a-46f4-9325-ac34f2522d61
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-03-25'
+                      Description: INTERAC e-Transfer service
+                      Credit: 0.0
+                      Balance: 1649.93
+                    - TransactionId: 7b6ef27d-3b87-49bf-b3b6-a25c1febd337
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-03-25'
+                      Description: Debit card puchase fees
+                      Credit: 0.0
+                      Balance: 1649.93
+                    - TransactionId: 35ddd4ae-f970-49fe-b644-6b41b364396b
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-03-25'
+                      Description: Monthly transaction fees
+                      Credit: 0.0
+                      Balance: 1649.93
+                    - TransactionId: 357e0a70-aa19-4c67-8c9a-ff0cf19702f0
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-03-18'
+                      Description: Transfer between accounts
+                      Credit: 9000.0
+                      Balance: 15717.76
+                    - TransactionId: bbab0598-5bbe-4603-8cae-942a2095a0b8
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-03-12'
+                      Description: Paie/Payroll
+                      Credit: 2192.54
+                      Balance: 7493.61
+                    - TransactionId: 2fff2d1a-0845-405e-a619-12794c78ad27
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-03-12'
+                      Description: Paie/Payroll
+                      Credit: 2083.46
+                      Balance: 5301.07
+                    - TransactionId: d4c7f0e0-50b2-4634-a31c-f2b6e1169039
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-03-11'
+                      Description: INTERAC e-Transfer
+                      Credit: 1310.0
+                      Balance: 3217.61
+                    - TransactionId: d52d0c07-1604-421c-844c-1394e317a553
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-03-09'
+                      Description: INTERAC e-Transfer
+                      Credit: 100.0
+                      Balance: 2083.26
+                  - Attribute: sum_total_credits_2_months_ago
+                    Transactions:
+                    - TransactionId: 013a8ce8-9645-4278-bd65-32c72471b16b
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-02-26'
+                      Description: Paie/Payroll
+                      Credit: 1920.99
+                      Balance: 11908.26
+                    - TransactionId: 7ee4d267-e7f0-4a8d-a403-c6d4c0397cbe
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-02-25'
+                      Description: INTERAC e-Transfer service
+                      Credit: 0.0
+                      Balance: 10001.22
+                    - TransactionId: 37f4a85e-3333-4566-a45d-8549680f74be
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-02-25'
+                      Description: Debit card puchase fees
+                      Credit: 0.0
+                      Balance: 10001.22
+                    - TransactionId: d1341b58-404e-497b-9e9a-9f0c3138dd5f
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-02-25'
+                      Description: Monthly transaction fees
+                      Credit: 0.0
+                      Balance: 10001.22
+                    - TransactionId: 455a371c-647a-4c0f-9d43-183924da9f52
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-02-25'
+                      Description: Eft debit reversal
+                      Credit: 264.15
+                      Balance: 10001.22
+                    - TransactionId: 98929e5a-dd96-4033-b54a-3534f0d69f4b
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-02-23'
+                      Description: INTERAC e-Transfer
+                      Credit: 2000.0
+                      Balance: 38780.97
+                    - TransactionId: ec5d5d7d-ff93-4b0d-b9f0-d83dd78e0e75
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-02-23'
+                      Description: Mobile deposit
+                      Credit: 28000.0
+                      Balance: 36780.97
+                    - TransactionId: ceaaeb12-15bc-47bd-a814-874be5d728c8
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-02-12'
+                      Description: Paie/Payroll
+                      Credit: 2276.61
+                      Balance: 9395.76
+                    - TransactionId: 60fd7d37-0896-4e5d-b4c9-5723ba2a65c3
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-02-04'
+                      Description: Cashback
+                      Credit: 7000.0
+                      Balance: 8123.28
+                Login:
+                  Username: multiple_employers
+                  IsScheduledRefresh: false
+                  LastRefresh: '2021-11-10T15:01:27.7756841'
+                  Type: Personal
+                  Id: 367046b0-7699-483d-94c2-08d9a3d5c70f
+                RequestId: b0ad6069-b40c-4c7e-aead-91c849d0b9f1
+        '202':
+          description: Operation Pending
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  FlinksCode:
+                    type: string
+                  HttpStatusCode:
+                    type: integer
+                  Message:
+                    type: string
+                  RequestId:
+                    type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Message:
+                    type: string
+  /v3/{customerId}/insight/login/{loginId}/attributes/{requestId}/GetIncomeAttributes:
+    get:
+      tags:
+      - Enrich
+      summary: Get Income Attributes
+      description: This endpoint will provide you with all Income use-case Attributes.
+      operationId: getIncomeAttributes
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID provided by Flinks that grants you access to the environment.
+      - name: loginId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: GUID representing end user's login ID.
+      - name: requestId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: GUID representing an authorized request to the API.
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  Card:
+                    type: object
+                    description: Object containing an Id field, all requested income attributes, and an AttributesDetail array with supporting transactions.
+                    properties:
+                      Id:
+                        type: string
+                        description: Unique identifier for the card.
+                      AttributesDetail:
+                        type: array
+                        description: Array of detailed attribute information including supporting transactions for each attribute.
+                        items:
+                          type: object
+                  Login:
+                    type: object
+                    description: Object representing end user's technical information.
+                  RequestId:
+                    type: string
+                    description: GUID representing an authorized request to the API.
+              example:
+                HttpStatusCode: 200
+                Card:
+                  Id: 367046b0-7699-483d-94c2-08d9a3d5c70f
+                  average_monthly_free_cash_flow: 334.96
+                  account_age_days: 346
+                  employer_name: Unknown
+                  average_monthly_employer_income_complex: 4665.78
+                  average_monthly_non_employer_income_complex: 2998.26
+                  average_monthly_government_income_complex: 3902.59
+                  employer_income_trend_simple: NONE_DETECTED
+                  total_deposits_trend_simple: DECREASING
+                  sum_employer_income_current_month: 0.0
+                  sum_employer_income_previous_month: 4276.0
+                  sum_employer_income_2_months_ago: 4197.6
+                  sum_employer_income_3_months_ago: 4517.42
+                  sum_employer_income_4_months_ago: 7096.69
+                  sum_employer_income_5_months_ago: 4227.87
+                  sum_employer_income_6_months_ago: 4475.84
+                  sum_employer_income_7_months_ago: 4434.58
+                  sum_employer_income_8_months_ago: 3700.8
+                  sum_employer_income_9_months_ago: 5954.9
+                  sum_employer_income_10_months_ago: 3776.11
+                  sum_employer_income_11_months_ago: 3950.19
+                  sum_employer_income_12_months_ago: 0.0
+                  count_employer_income_current_month: 0
+                  count_employer_income_previous_month: 2
+                  count_employer_income_2_months_ago: 2
+                  count_employer_income_3_months_ago: 2
+                  count_employer_income_4_months_ago: 3
+                  count_employer_income_5_months_ago: 2
+                  count_employer_income_6_months_ago: 2
+                  count_employer_income_7_months_ago: 2
+                  count_employer_income_8_months_ago: 2
+                  count_employer_income_9_months_ago: 3
+                  count_employer_income_10_months_ago: 2
+                  count_employer_income_11_months_ago: 2
+                  count_employer_income_12_months_ago: 0
+                  sum_employer_income: 50608.0
+                  sum_government_income_90_days: 3902.59
+                  sum_government_income_current_month: 2200.48
+                  sum_government_income_previous_month: 1702.11
+                  sum_government_income_2_months_ago: 0.0
+                  sum_government_income_3_months_ago: 0.0
+                  sum_government_income_4_months_ago: 0.0
+                  sum_government_income_5_months_ago: 0.0
+                  sum_government_income_6_months_ago: 0.0
+                  sum_government_income_7_months_ago: 0.0
+                  sum_government_income_8_months_ago: 0.0
+                  sum_government_income_9_months_ago: 0.0
+                  sum_government_income_10_months_ago: 0.0
+                  sum_government_income_11_months_ago: 0.0
+                  sum_government_income_12_months_ago: 0.0
+                  count_government_income_current_month: 1
+                  count_government_income_previous_month: 1
+                  count_government_income_2_months_ago: 0
+                  count_government_income_3_months_ago: 0
+                  count_government_income_4_months_ago: 0
+                  count_government_income_5_months_ago: 0
+                  count_government_income_6_months_ago: 0
+                  count_government_income_7_months_ago: 0
+                  count_government_income_8_months_ago: 0
+                  count_government_income_9_months_ago: 0
+                  count_government_income_10_months_ago: 0
+                  count_government_income_11_months_ago: 0
+                  count_government_income_12_months_ago: 0
+                  sum_employment_insurance_income_90_days: 0.0
+                  sum_social_assistance_income_90_days: 0.0
+                  sum_wsib_income_90_days: 0.0
+                  sum_pension_income_90_days: 0.0
+                  sum_child_support_income_government_90_days: 3902.59
+                  sum_other_income_90_days: 0.0
+                  sum_total_credits_current_month: 4525.47
+                  sum_total_credits_previous_month: 16388.11
+                  sum_total_credits_2_months_ago: 41461.75
+                  sum_total_credits_3_months_ago: 4517.42
+                  sum_total_credits_4_months_ago: 7256.69
+                  sum_total_credits_5_months_ago: 4227.87
+                  sum_total_credits_6_months_ago: 4475.84
+                  sum_total_credits_7_months_ago: 4447.21
+                  sum_total_credits_8_months_ago: 3700.8
+                  sum_total_credits_9_months_ago: 6222.78
+                  sum_total_credits_10_months_ago: 3776.11
+                  sum_total_credits_11_months_ago: 3950.19
+                  sum_total_credits_12_months_ago: 0.0
+                  AttributesDetail:
+                  - Attribute: sum_employer_income
+                    Transactions:
+                    - TransactionId: bbab0598-5bbe-4603-8cae-942a2095a0b8
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-03-12'
+                      Description: Paie/Payroll
+                      Credit: 2192.54
+                      Balance: 7493.61
+                    - TransactionId: 2fff2d1a-0845-405e-a619-12794c78ad27
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-03-12'
+                      Description: Paie/Payroll
+                      Credit: 2083.46
+                      Balance: 5301.07
+                    - TransactionId: 013a8ce8-9645-4278-bd65-32c72471b16b
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-02-26'
+                      Description: Paie/Payroll
+                      Credit: 1920.99
+                      Balance: 11908.26
+                Login:
+                  Username: multiple_employers
+                  IsScheduledRefresh: false
+                  LastRefresh: '2026-04-16T09:23:14.5821093'
+                  Type: Personal
+                  Id: 367046b0-7699-483d-94c2-08d9a3d5c70f
+                RequestId: b0ad6069-b40c-4c7e-aead-91c849d0b9f1
+        '202':
+          description: Operation Pending
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  FlinksCode:
+                    type: string
+                  HttpStatusCode:
+                    type: integer
+                  Message:
+                    type: string
+                  RequestId:
+                    type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Message:
+                    type: string
+  /v3/{customerId}/insight/login/{loginId}/attributes/{requestId}/GetLendingAttributes:
+    get:
+      tags:
+      - Enrich
+      summary: Get Lending Attributes
+      description: This endpoint will provide you with all Lending Use-Case Attributes.
+      operationId: getLendingAttributes
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+        description: Unique GUID provided by Flinks that grants you access to the environment.
+      - name: loginId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: GUID representing end user's login ID.
+      - name: requestId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: GUID representing an authorized request to the API.
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  Card:
+                    type: object
+                    description: Object containing an Id field and all the requested lending attributes.
+                    properties:
+                      Id:
+                        type: string
+                        description: Unique identifier for the card.
+                      AttributesDetail:
+                        type: array
+                        description: Array of detailed attribute information including supporting transactions for each attribute.
+                        items:
+                          type: object
+                  Login:
+                    type: object
+                    description: Object containing login metadata.
+                  RequestId:
+                    type: string
+                    description: Unique identifier for the request.
+              example:
+                HttpStatusCode: 200
+                Card:
+                  Id: 367046b0-7699-483d-94c2-08d9a3d5c70f
+                  account_age_days: 346
+                  active_days_trend: 1.25
+                  auto_loan_payment_frequency: NONE_DETECTED
+                  average_closing_balance_day_after_employer_income: 2019.47
+                  average_closing_balance_day_after_government_income: 2517.18
+                  average_closing_balance_day_after_income: 3106.06
+                  average_closing_balance_day_of_employer_income: 2122.05
+                  average_closing_balance_day_of_government_income: 2760.58
+                  average_closing_balance_day_of_income: 3137.15
+                  average_disability_deposit: 0.0
+                  average_employer_a_income_deposit: 1399.57
+                  average_employer_b_income_deposit: 0.0
+                  average_employer_income_deposit: 2108.67
+                  average_employer_other_income_deposit: 0.0
+                  average_employment_insurance_deposit: 0.0
+                  average_government_income_deposit: 1951.3
+                  average_micro_loan_payment: 0.0
+                  average_monthly_auto_loan_payments_complex: 0.0
+                  average_monthly_child_support_income_government_complex: 3902.59
+                  average_monthly_disability_income_complex: 0.0
+                  average_monthly_employer_a_income_complex: 4665.78
+                  average_monthly_employer_b_income_complex: 0.0
+                  average_monthly_employer_income_complex: 4665.78
+                  average_monthly_employer_other_income_complex: 0.0
+                  average_monthly_employment_insurance_income_complex: 0.0
+                  average_monthly_free_cash_flow: 334.96
+                  average_monthly_government_income_complex: 3902.59
+                  average_monthly_loan_deposits_complex: 0.0
+                  average_monthly_loan_payments_complex: 190.5
+                  average_monthly_micro_loan_payments_complex: 0.0
+                  average_monthly_mortgage_payments_complex: 190.5
+                  average_monthly_non_employer_income_complex: 2998.26
+                  average_monthly_nsf_fees_count: 0.09
+                  average_monthly_other_loan_payments_complex: 0.0
+                  average_monthly_pension_income_complex: 0.0
+                  average_monthly_recurring_transfers_in_complex: 0.0
+                  average_monthly_recurring_transfers_out_complex: 0.0
+                  average_monthly_social_assistance_income_complex: 0.0
+                  average_monthly_student_loan_payments_complex: 0.0
+                  average_monthly_telecom_payments_complex: 1159.67
+                  average_monthly_total_income_complex: 7664.04
+                  average_monthly_total_recurring_deposits_complex: 4835.99
+                  average_monthly_total_recurring_payments_complex: 311.42
+                  average_monthly_utility_payments_complex: 0.0
+                  average_monthly_wsib_income_complex: 0.0
+                  average_pension_deposit: 0.0
+                  average_social_assistance_deposit: 0.0
+                  average_wsib_deposit: 0.0
+                  balance_90_days_ago: 507.81
+                  balance_current: 3880.28
+                  balance_max: 38780.97
+                  balance_min: 105.16
+                  balance_trend_simple: INCREASING
+                  child_support_income_government_frequency: BiWeekly
+                  count_active_days: 129
+                  count_auto_loan_payments_10_months_ago: 0
+                  count_auto_loan_payments_11_months_ago: 0
+                  count_auto_loan_payments_12_months_ago: 0
+                  count_auto_loan_payments_2_months_ago: 0
+                  count_auto_loan_payments_3_months_ago: 0
+                  count_auto_loan_payments_4_months_ago: 0
+                  count_auto_loan_payments_5_months_ago: 0
+                  count_auto_loan_payments_6_months_ago: 0
+                  count_auto_loan_payments_7_months_ago: 0
+                  count_auto_loan_payments_8_months_ago: 0
+                  count_auto_loan_payments_9_months_ago: 0
+                  count_auto_loan_payments_current_month: 0
+                  count_auto_loan_payments_previous_month: 0
+                  count_child_support_income_government_10_months_ago: 0
+                  count_child_support_income_government_11_months_ago: 0
+                  count_child_support_income_government_12_months_ago: 0
+                  count_child_support_income_government_2_months_ago: 0
+                  count_child_support_income_government_3_months_ago: 0
+                  count_child_support_income_government_4_months_ago: 0
+                  count_child_support_income_government_5_months_ago: 0
+                  count_child_support_income_government_6_months_ago: 0
+                  count_child_support_income_government_7_months_ago: 0
+                  count_child_support_income_government_8_months_ago: 0
+                  count_child_support_income_government_9_months_ago: 0
+                  count_child_support_income_government_current_month: 1
+                  count_child_support_income_government_previous_month: 1
+                  count_days_negative_balance_90_days: 0
+                  count_disability_income_10_months_ago: 0
+                  count_disability_income_11_months_ago: 0
+                  count_disability_income_12_months_ago: 0
+                  count_disability_income_2_months_ago: 0
+                  count_disability_income_3_months_ago: 0
+                  count_disability_income_4_months_ago: 0
+                  count_disability_income_5_months_ago: 0
+                  count_disability_income_6_months_ago: 0
+                  count_disability_income_7_months_ago: 0
+                  count_disability_income_8_months_ago: 0
+                  count_disability_income_9_months_ago: 0
+                  count_disability_income_current_month: 0
+                  count_disability_income_previous_month: 0
+                  count_distinct_micro_lenders: 0
+                  count_employer_a_income_10_months_ago: 2
+                  count_employer_a_income_11_months_ago: 2
+                  count_employer_a_income_12_months_ago: 0
+                  count_employer_a_income_2_months_ago: 2
+                  count_employer_a_income_3_months_ago: 2
+                  count_employer_a_income_4_months_ago: 3
+                  count_employer_a_income_5_months_ago: 2
+                  count_employer_a_income_6_months_ago: 2
+                  count_employer_a_income_7_months_ago: 2
+                  count_employer_a_income_8_months_ago: 2
+                  count_employer_a_income_9_months_ago: 3
+                  count_employer_a_income_current_month: 0
+                  count_employer_a_income_previous_month: 2
+                  count_employer_b_income_10_months_ago: 0
+                  count_employer_b_income_11_months_ago: 0
+                  count_employer_b_income_12_months_ago: 0
+                  count_employer_b_income_2_months_ago: 0
+                  count_employer_b_income_3_months_ago: 0
+                  count_employer_b_income_4_months_ago: 0
+                  count_employer_b_income_5_months_ago: 0
+                  count_employer_b_income_6_months_ago: 0
+                  count_employer_b_income_7_months_ago: 0
+                  count_employer_b_income_8_months_ago: 0
+                  count_employer_b_income_9_months_ago: 0
+                  count_employer_b_income_current_month: 0
+                  count_employer_b_income_previous_month: 0
+                  count_employer_income_10_months_ago: 2
+                  count_employer_income_11_months_ago: 2
+                  count_employer_income_12_months_ago: 0
+                  count_employer_income_2_months_ago: 2
+                  count_employer_income_3_months_ago: 2
+                  count_employer_income_4_months_ago: 3
+                  count_employer_income_5_months_ago: 2
+                  count_employer_income_6_months_ago: 2
+                  count_employer_income_7_months_ago: 2
+                  count_employer_income_8_months_ago: 2
+                  count_employer_income_9_months_ago: 3
+                  count_employer_income_current_month: 0
+                  count_employer_income_previous_month: 2
+                  count_employer_other_income_10_months_ago: 0
+                  count_employer_other_income_11_months_ago: 0
+                  count_employer_other_income_12_months_ago: 0
+                  count_employer_other_income_2_months_ago: 0
+                  count_employer_other_income_3_months_ago: 0
+                  count_employer_other_income_4_months_ago: 0
+                  count_employer_other_income_5_months_ago: 0
+                  count_employer_other_income_6_months_ago: 0
+                  count_employer_other_income_7_months_ago: 0
+                  count_employer_other_income_8_months_ago: 0
+                  count_employer_other_income_9_months_ago: 0
+                  count_employer_other_income_current_month: 0
+                  count_employer_other_income_previous_month: 0
+                  count_employment_insurance_income_10_months_ago: 0
+                  count_employment_insurance_income_11_months_ago: 0
+                  count_employment_insurance_income_12_months_ago: 0
+                  count_employment_insurance_income_2_months_ago: 0
+                  count_employment_insurance_income_3_months_ago: 0
+                  count_employment_insurance_income_4_months_ago: 0
+                  count_employment_insurance_income_5_months_ago: 0
+                  count_employment_insurance_income_6_months_ago: 0
+                  count_employment_insurance_income_7_months_ago: 0
+                  count_employment_insurance_income_8_months_ago: 0
+                  count_employment_insurance_income_9_months_ago: 0
+                  count_employment_insurance_income_current_month: 0
+                  count_employment_insurance_income_previous_month: 0
+                  count_government_income_10_months_ago: 0
+                  count_government_income_11_months_ago: 0
+                  count_government_income_12_months_ago: 0
+                  count_government_income_2_months_ago: 0
+                  count_government_income_3_months_ago: 0
+                  count_government_income_4_months_ago: 0
+                  count_government_income_5_months_ago: 0
+                  count_government_income_6_months_ago: 0
+                  count_government_income_7_months_ago: 0
+                  count_government_income_8_months_ago: 0
+                  count_government_income_9_months_ago: 0
+                  count_government_income_current_month: 1
+                  count_government_income_previous_month: 1
+                  count_insurance_income_10_months_ago: 0
+                  count_insurance_income_11_months_ago: 0
+                  count_insurance_income_12_months_ago: 0
+                  count_insurance_income_2_months_ago: 0
+                  count_insurance_income_3_months_ago: 0
+                  count_insurance_income_4_months_ago: 0
+                  count_insurance_income_5_months_ago: 0
+                  count_insurance_income_6_months_ago: 0
+                  count_insurance_income_7_months_ago: 0
+                  count_insurance_income_8_months_ago: 0
+                  count_insurance_income_9_months_ago: 0
+                  count_insurance_income_current_month: 0
+                  count_insurance_income_previous_month: 0
+                  count_loan_payments_10_months_ago: 0
+                  count_loan_payments_11_months_ago: 0
+                  count_loan_payments_12_months_ago: 0
+                  count_loan_payments_2_months_ago: 0
+                  count_loan_payments_3_months_ago: 0
+                  count_loan_payments_4_months_ago: 0
+                  count_loan_payments_5_months_ago: 0
+                  count_loan_payments_6_months_ago: 0
+                  count_loan_payments_7_months_ago: 0
+                  count_loan_payments_8_months_ago: 0
+                  count_loan_payments_9_months_ago: 0
+                  count_loan_payments_current_month: 1
+                  count_loan_payments_previous_month: 1
+                  count_micro_loan_payments_10_months_ago: 0
+                  count_micro_loan_payments_11_months_ago: 0
+                  count_micro_loan_payments_12_months_ago: 0
+                  count_micro_loan_payments_2_months_ago: 0
+                  count_micro_loan_payments_3_months_ago: 0
+                  count_micro_loan_payments_4_months_ago: 0
+                  count_micro_loan_payments_5_months_ago: 0
+                  count_micro_loan_payments_6_months_ago: 0
+                  count_micro_loan_payments_7_months_ago: 0
+                  count_micro_loan_payments_8_months_ago: 0
+                  count_micro_loan_payments_9_months_ago: 0
+                  count_micro_loan_payments_current_month: 0
+                  count_micro_loan_payments_previous_month: 0
+                  count_mortgage_payments_10_months_ago: 0
+                  count_mortgage_payments_11_months_ago: 0
+                  count_mortgage_payments_12_months_ago: 0
+                  count_mortgage_payments_2_months_ago: 0
+                  count_mortgage_payments_3_months_ago: 0
+                  count_mortgage_payments_4_months_ago: 0
+                  count_mortgage_payments_5_months_ago: 0
+                  count_mortgage_payments_6_months_ago: 0
+                  count_mortgage_payments_7_months_ago: 0
+                  count_mortgage_payments_8_months_ago: 0
+                  count_mortgage_payments_9_months_ago: 0
+                  count_mortgage_payments_current_month: 1
+                  count_mortgage_payments_previous_month: 1
+                  count_non_employer_income_10_months_ago: 0
+                  count_non_employer_income_11_months_ago: 0
+                  count_non_employer_income_12_months_ago: 0
+                  count_non_employer_income_2_months_ago: 1
+                  count_non_employer_income_3_months_ago: 0
+                  count_non_employer_income_4_months_ago: 0
+                  count_non_employer_income_5_months_ago: 0
+                  count_non_employer_income_6_months_ago: 0
+                  count_non_employer_income_7_months_ago: 1
+                  count_non_employer_income_8_months_ago: 0
+                  count_non_employer_income_9_months_ago: 1
+                  count_non_employer_income_current_month: 2
+                  count_non_employer_income_previous_month: 1
+                  count_nsf: 1
+                  count_nsf_30_days: 0
+                  count_nsf_6_months: 1
+                  count_nsf_60_days: 1
+                  count_nsf_90_days: 1
+                  count_nsf_day_after_employer_income: 0
+                  count_nsf_day_after_government_income: 0
+                  count_nsf_day_of_employer_income: 0
+                  count_nsf_day_of_government_income: 0
+                  count_other_loan_payments_10_months_ago: 0
+                  count_other_loan_payments_11_months_ago: 0
+                  count_other_loan_payments_12_months_ago: 0
+                  count_other_loan_payments_2_months_ago: 0
+                  count_other_loan_payments_3_months_ago: 0
+                  count_other_loan_payments_4_months_ago: 0
+                  count_other_loan_payments_5_months_ago: 0
+                  count_other_loan_payments_6_months_ago: 0
+                  count_other_loan_payments_7_months_ago: 0
+                  count_other_loan_payments_8_months_ago: 0
+                  count_other_loan_payments_9_months_ago: 0
+                  count_other_loan_payments_current_month: 0
+                  count_other_loan_payments_previous_month: 0
+                  count_pension_income_10_months_ago: 0
+                  count_pension_income_11_months_ago: 0
+                  count_pension_income_12_months_ago: 0
+                  count_pension_income_2_months_ago: 0
+                  count_pension_income_3_months_ago: 0
+                  count_pension_income_4_months_ago: 0
+                  count_pension_income_5_months_ago: 0
+                  count_pension_income_6_months_ago: 0
+                  count_pension_income_7_months_ago: 0
+                  count_pension_income_8_months_ago: 0
+                  count_pension_income_9_months_ago: 0
+                  count_pension_income_current_month: 0
+                  count_pension_income_previous_month: 0
+                  count_social_assistance_income_10_months_ago: 0
+                  count_social_assistance_income_11_months_ago: 0
+                  count_social_assistance_income_12_months_ago: 0
+                  count_social_assistance_income_2_months_ago: 0
+                  count_social_assistance_income_3_months_ago: 0
+                  count_social_assistance_income_4_months_ago: 0
+                  count_social_assistance_income_5_months_ago: 0
+                  count_social_assistance_income_6_months_ago: 0
+                  count_social_assistance_income_7_months_ago: 0
+                  count_social_assistance_income_8_months_ago: 0
+                  count_social_assistance_income_9_months_ago: 0
+                  count_social_assistance_income_current_month: 0
+                  count_social_assistance_income_previous_month: 0
+                  count_stop_payment_30_days: 0
+                  count_stop_payment_60_days: 0
+                  count_stop_payment_90_days: 0
+                  count_stop_payment_reversals_30_days: 0
+                  count_stop_payment_reversals_60_days: 0
+                  count_stop_payment_reversals_90_days: 0
+                  count_student_loan_payments_10_months_ago: 0
+                  count_student_loan_payments_11_months_ago: 0
+                  count_student_loan_payments_12_months_ago: 0
+                  count_student_loan_payments_2_months_ago: 0
+                  count_student_loan_payments_3_months_ago: 0
+                  count_student_loan_payments_4_months_ago: 0
+                  count_student_loan_payments_5_months_ago: 0
+                  count_student_loan_payments_6_months_ago: 0
+                  count_student_loan_payments_7_months_ago: 0
+                  count_student_loan_payments_8_months_ago: 0
+                  count_student_loan_payments_9_months_ago: 0
+                  count_student_loan_payments_current_month: 0
+                  count_student_loan_payments_previous_month: 0
+                  count_telecom_payments_10_months_ago: 0
+                  count_telecom_payments_11_months_ago: 0
+                  count_telecom_payments_12_months_ago: 0
+                  count_telecom_payments_2_months_ago: 0
+                  count_telecom_payments_3_months_ago: 0
+                  count_telecom_payments_4_months_ago: 0
+                  count_telecom_payments_5_months_ago: 0
+                  count_telecom_payments_6_months_ago: 0
+                  count_telecom_payments_7_months_ago: 0
+                  count_telecom_payments_8_months_ago: 0
+                  count_telecom_payments_9_months_ago: 0
+                  count_telecom_payments_current_month: 0
+                  count_telecom_payments_previous_month: 1
+                  count_total_income_10_months_ago: 2
+                  count_total_income_11_months_ago: 2
+                  count_total_income_12_months_ago: 0
+                  count_total_income_2_months_ago: 3
+                  count_total_income_3_months_ago: 2
+                  count_total_income_4_months_ago: 3
+                  count_total_income_5_months_ago: 2
+                  count_total_income_6_months_ago: 2
+                  count_total_income_7_months_ago: 3
+                  count_total_income_8_months_ago: 2
+                  count_total_income_9_months_ago: 4
+                  count_total_income_current_month: 2
+                  count_total_income_previous_month: 3
+                  count_utility_payments_10_months_ago: 0
+                  count_utility_payments_11_months_ago: 0
+                  count_utility_payments_12_months_ago: 0
+                  count_utility_payments_2_months_ago: 0
+                  count_utility_payments_3_months_ago: 0
+                  count_utility_payments_4_months_ago: 0
+                  count_utility_payments_5_months_ago: 0
+                  count_utility_payments_6_months_ago: 0
+                  count_utility_payments_7_months_ago: 0
+                  count_utility_payments_8_months_ago: 0
+                  count_utility_payments_9_months_ago: 0
+                  count_utility_payments_current_month: 0
+                  count_utility_payments_previous_month: 0
+                  count_wsib_income_10_months_ago: 0
+                  count_wsib_income_11_months_ago: 0
+                  count_wsib_income_12_months_ago: 0
+                  count_wsib_income_2_months_ago: 0
+                  count_wsib_income_3_months_ago: 0
+                  count_wsib_income_4_months_ago: 0
+                  count_wsib_income_5_months_ago: 0
+                  count_wsib_income_6_months_ago: 0
+                  count_wsib_income_7_months_ago: 0
+                  count_wsib_income_8_months_ago: 0
+                  count_wsib_income_9_months_ago: 0
+                  count_wsib_income_current_month: 0
+                  count_wsib_income_previous_month: 0
+                  credit_activity_trend_simple: DECREASING
+                  total_deposits_trend_simple: DECREASING
+                  debit_activity_trend_simple: DECREASING
+                  disability_income_frequency: NONE_DETECTED
+                  employer_a_frequency: Unknown
+                  employer_a_name: Unknown
+                  employer_b_frequency: NONE_DETECTED
+                  employer_b_name: NONE_DETECTED
+                  employer_income_frequency: Unknown
+                  employer_income_trend_simple: NONE_DETECTED
+                  employer_name: Unknown
+                  employer_other_frequency: NONE_DETECTED
+                  employer_other_name: NONE_DETECTED
+                  employment_insurance_income_frequency: NONE_DETECTED
+                  estimated_annual_net_employer_a_income: 55989.36
+                  estimated_annual_net_employer_b_income: 0.0
+                  estimated_annual_net_employer_income: 56350.66
+                  estimated_annual_net_employer_other_income: 0.0
+                  government_income_frequency: BiWeekly
+                  has_employer_income_in_last_14_days: 'NO'
+                  has_employer_income_in_last_30_days: 'NO'
+                  has_employer_income_in_last_7_days: 'NO'
+                  has_government_income_in_last_14_days: 'YES'
+                  has_government_income_in_last_30_days: 'YES'
+                  has_government_income_in_last_7_days: 'NO'
+                  has_overdraft: false
+                  is_employment_loss_detected: 'True'
+                  last_2_paydates_child_support_income_government: 2026-04-09, 2026-03-26
+                  last_2_paydates_disability_income: NONE_DETECTED
+                  last_2_paydates_employer_a: 2026-04-17, 2026-04-15
+                  last_2_paydates_employer_b: NONE_DETECTED
+                  last_2_paydates_employer_other: NONE_DETECTED
+                  last_2_paydates_employment_insurance_income: NONE_DETECTED
+                  last_2_paydates_government_income: 2026-04-09, 2026-03-26
+                  last_2_paydates_pension_income: NONE_DETECTED
+                  last_2_paydates_social_assistance_income: NONE_DETECTED
+                  last_2_paydates_wsib_income: NONE_DETECTED
+                  micro_lender_name: NONE_DETECTED
+                  micro_loan_payment_frequency: NONE_DETECTED
+                  overall_activity_trend_simple: DECREASING
+                  pension_income_frequency: NONE_DETECTED
+                  recurring_deposits_10_months_ago: 5954.9
+                  recurring_deposits_11_months_ago: 3776.11
+                  recurring_deposits_12_months_ago: 3950.19
+                  recurring_deposits_2_months_ago: 5978.11
+                  recurring_deposits_3_months_ago: 4197.6
+                  recurring_deposits_4_months_ago: 4517.42
+                  recurring_deposits_5_months_ago: 7096.69
+                  recurring_deposits_6_months_ago: 4227.87
+                  recurring_deposits_7_months_ago: 4475.84
+                  recurring_deposits_8_months_ago: 4434.58
+                  recurring_deposits_9_months_ago: 3700.8
+                  recurring_deposits_current_month: 0.0
+                  recurring_deposits_previous_month: 2200.48
+                  social_assistance_income_frequency: NONE_DETECTED
+                  sum_auto_loan_payments_10_months_ago: 0.0
+                  sum_auto_loan_payments_11_months_ago: 0.0
+                  sum_auto_loan_payments_12_months_ago: 0.0
+                  sum_auto_loan_payments_2_months_ago: 0.0
+                  sum_auto_loan_payments_3_months_ago: 0.0
+                  sum_auto_loan_payments_4_months_ago: 0.0
+                  sum_auto_loan_payments_5_months_ago: 0.0
+                  sum_auto_loan_payments_6_months_ago: 0.0
+                  sum_auto_loan_payments_7_months_ago: 0.0
+                  sum_auto_loan_payments_8_months_ago: 0.0
+                  sum_auto_loan_payments_9_months_ago: 0.0
+                  sum_auto_loan_payments_current_month: 0.0
+                  sum_auto_loan_payments_previous_month: 0.0
+                  sum_child_support_income_government_10_months_ago: 0.0
+                  sum_child_support_income_government_11_months_ago: 0.0
+                  sum_child_support_income_government_12_months_ago: 0.0
+                  sum_child_support_income_government_2_months_ago: 0.0
+                  sum_child_support_income_government_3_months_ago: 0.0
+                  sum_child_support_income_government_4_months_ago: 0.0
+                  sum_child_support_income_government_5_months_ago: 0.0
+                  sum_child_support_income_government_6_months_ago: 0.0
+                  sum_child_support_income_government_7_months_ago: 0.0
+                  sum_child_support_income_government_8_months_ago: 0.0
+                  sum_child_support_income_government_9_months_ago: 0.0
+                  sum_child_support_income_government_current_month: 2200.48
+                  sum_child_support_income_government_previous_month: 1702.11
+                  sum_disability_income_10_months_ago: 0.0
+                  sum_disability_income_11_months_ago: 0.0
+                  sum_disability_income_12_months_ago: 0.0
+                  sum_disability_income_2_months_ago: 0.0
+                  sum_disability_income_3_months_ago: 0.0
+                  sum_disability_income_4_months_ago: 0.0
+                  sum_disability_income_5_months_ago: 0.0
+                  sum_disability_income_6_months_ago: 0.0
+                  sum_disability_income_7_months_ago: 0.0
+                  sum_disability_income_8_months_ago: 0.0
+                  sum_disability_income_9_months_ago: 0.0
+                  sum_disability_income_current_month: 0.0
+                  sum_disability_income_previous_month: 0.0
+                  sum_employer_a_income_10_months_ago: 3776.11
+                  sum_employer_a_income_11_months_ago: 3950.19
+                  sum_employer_a_income_12_months_ago: 0.0
+                  sum_employer_a_income_2_months_ago: 4197.6
+                  sum_employer_a_income_3_months_ago: 4517.42
+                  sum_employer_a_income_4_months_ago: 7096.69
+                  sum_employer_a_income_5_months_ago: 4227.87
+                  sum_employer_a_income_6_months_ago: 4475.84
+                  sum_employer_a_income_7_months_ago: 4434.58
+                  sum_employer_a_income_8_months_ago: 3700.8
+                  sum_employer_a_income_9_months_ago: 5954.9
+                  sum_employer_a_income_current_month: 0.0
+                  sum_employer_a_income_previous_month: 4276.0
+                  sum_employer_b_income_10_months_ago: 0.0
+                  sum_employer_b_income_11_months_ago: 0.0
+                  sum_employer_b_income_12_months_ago: 0.0
+                  sum_employer_b_income_2_months_ago: 0.0
+                  sum_employer_b_income_3_months_ago: 0.0
+                  sum_employer_b_income_4_months_ago: 0.0
+                  sum_employer_b_income_5_months_ago: 0.0
+                  sum_employer_b_income_6_months_ago: 0.0
+                  sum_employer_b_income_7_months_ago: 0.0
+                  sum_employer_b_income_8_months_ago: 0.0
+                  sum_employer_b_income_9_months_ago: 0.0
+                  sum_employer_b_income_current_month: 0.0
+                  sum_employer_b_income_previous_month: 0.0
+                  sum_employer_income_10_months_ago: 3776.11
+                  sum_employer_income_11_months_ago: 3950.19
+                  sum_employer_income_12_months_ago: 0.0
+                  sum_employer_income_2_months_ago: 4197.6
+                  sum_employer_income_3_months_ago: 4517.42
+                  sum_employer_income_4_months_ago: 7096.69
+                  sum_employer_income_5_months_ago: 4227.87
+                  sum_employer_income_6_months_ago: 4475.84
+                  sum_employer_income_7_months_ago: 4434.58
+                  sum_employer_income_8_months_ago: 3700.8
+                  sum_employer_income_9_months_ago: 5954.9
+                  sum_employer_income_current_month: 0.0
+                  sum_employer_income_previous_month: 4276.0
+                  sum_employer_other_income_10_months_ago: 0.0
+                  sum_employer_other_income_11_months_ago: 0.0
+                  sum_employer_other_income_12_months_ago: 0.0
+                  sum_employer_other_income_2_months_ago: 0.0
+                  sum_employer_other_income_3_months_ago: 0.0
+                  sum_employer_other_income_4_months_ago: 0.0
+                  sum_employer_other_income_5_months_ago: 0.0
+                  sum_employer_other_income_6_months_ago: 0.0
+                  sum_employer_other_income_7_months_ago: 0.0
+                  sum_employer_other_income_8_months_ago: 0.0
+                  sum_employer_other_income_9_months_ago: 0.0
+                  sum_employer_other_income_current_month: 0.0
+                  sum_employer_other_income_previous_month: 0.0
+                  sum_employment_insurance_income_10_months_ago: 0.0
+                  sum_employment_insurance_income_11_months_ago: 0.0
+                  sum_employment_insurance_income_12_months_ago: 0.0
+                  sum_employment_insurance_income_2_months_ago: 0.0
+                  sum_employment_insurance_income_3_months_ago: 0.0
+                  sum_employment_insurance_income_4_months_ago: 0.0
+                  sum_employment_insurance_income_5_months_ago: 0.0
+                  sum_employment_insurance_income_6_months_ago: 0.0
+                  sum_employment_insurance_income_7_months_ago: 0.0
+                  sum_employment_insurance_income_8_months_ago: 0.0
+                  sum_employment_insurance_income_9_months_ago: 0.0
+                  sum_employment_insurance_income_current_month: 0.0
+                  sum_employment_insurance_income_previous_month: 0.0
+                  sum_government_income_10_months_ago: 0.0
+                  sum_government_income_11_months_ago: 0.0
+                  sum_government_income_12_months_ago: 0.0
+                  sum_government_income_2_months_ago: 0.0
+                  sum_government_income_3_months_ago: 0.0
+                  sum_government_income_4_months_ago: 0.0
+                  sum_government_income_5_months_ago: 0.0
+                  sum_government_income_6_months_ago: 0.0
+                  sum_government_income_7_months_ago: 0.0
+                  sum_government_income_8_months_ago: 0.0
+                  sum_government_income_9_months_ago: 0.0
+                  sum_government_income_current_month: 2200.48
+                  sum_government_income_previous_month: 1702.11
+                  sum_government_income_total: 3902.59
+                  sum_insurance_income: 0.0
+                  sum_insurance_income_10_months_ago: 0.0
+                  sum_insurance_income_11_months_ago: 0.0
+                  sum_insurance_income_12_months_ago: 0.0
+                  sum_insurance_income_2_months_ago: 0.0
+                  sum_insurance_income_3_months_ago: 0.0
+                  sum_insurance_income_4_months_ago: 0.0
+                  sum_insurance_income_5_months_ago: 0.0
+                  sum_insurance_income_6_months_ago: 0.0
+                  sum_insurance_income_7_months_ago: 0.0
+                  sum_insurance_income_8_months_ago: 0.0
+                  sum_insurance_income_9_months_ago: 0.0
+                  sum_insurance_income_current_month: 0.0
+                  sum_insurance_income_previous_month: 0.0
+                  sum_loan_deposits: 0.0
+                  sum_loan_deposits_30_days: 0.0
+                  sum_loan_deposits_60_days: 0.0
+                  sum_loan_deposits_90_days: 0.0
+                  sum_loan_payments: 2391.78
+                  sum_loan_payments_10_months_ago: 0.0
+                  sum_loan_payments_11_months_ago: 0.0
+                  sum_loan_payments_12_months_ago: 0.0
+                  sum_loan_payments_2_months_ago: 0.0
+                  sum_loan_payments_3_months_ago: 0.0
+                  sum_loan_payments_4_months_ago: 0.0
+                  sum_loan_payments_5_months_ago: 0.0
+                  sum_loan_payments_6_months_ago: 0.0
+                  sum_loan_payments_7_months_ago: 0.0
+                  sum_loan_payments_8_months_ago: 0.0
+                  sum_loan_payments_9_months_ago: 0.0
+                  sum_loan_payments_current_month: 486.8
+                  sum_loan_payments_previous_month: 1904.98
+                  sum_micro_loan_payments_10_months_ago: 0.0
+                  sum_micro_loan_payments_11_months_ago: 0.0
+                  sum_micro_loan_payments_12_months_ago: 0.0
+                  sum_micro_loan_payments_2_months_ago: 0.0
+                  sum_micro_loan_payments_3_months_ago: 0.0
+                  sum_micro_loan_payments_4_months_ago: 0.0
+                  sum_micro_loan_payments_5_months_ago: 0.0
+                  sum_micro_loan_payments_6_months_ago: 0.0
+                  sum_micro_loan_payments_7_months_ago: 0.0
+                  sum_micro_loan_payments_8_months_ago: 0.0
+                  sum_micro_loan_payments_9_months_ago: 0.0
+                  sum_micro_loan_payments_current_month: 0.0
+                  sum_micro_loan_payments_previous_month: 0.0
+                  sum_mortgage_payments_10_months_ago: 0.0
+                  sum_mortgage_payments_11_months_ago: 0.0
+                  sum_mortgage_payments_12_months_ago: 0.0
+                  sum_mortgage_payments_2_months_ago: 0.0
+                  sum_mortgage_payments_3_months_ago: 0.0
+                  sum_mortgage_payments_4_months_ago: 0.0
+                  sum_mortgage_payments_5_months_ago: 0.0
+                  sum_mortgage_payments_6_months_ago: 0.0
+                  sum_mortgage_payments_7_months_ago: 0.0
+                  sum_mortgage_payments_8_months_ago: 0.0
+                  sum_mortgage_payments_9_months_ago: 0.0
+                  sum_mortgage_payments_current_month: 486.8
+                  sum_mortgage_payments_previous_month: 1904.98
+                  sum_non_employer_income: 33208.09
+                  sum_non_employer_income_10_months_ago: 0.0
+                  sum_non_employer_income_11_months_ago: 0.0
+                  sum_non_employer_income_12_months_ago: 0.0
+                  sum_non_employer_income_2_months_ago: 28000.0
+                  sum_non_employer_income_3_months_ago: 0.0
+                  sum_non_employer_income_4_months_ago: 0.0
+                  sum_non_employer_income_5_months_ago: 0.0
+                  sum_non_employer_income_6_months_ago: 0.0
+                  sum_non_employer_income_7_months_ago: 12.63
+                  sum_non_employer_income_8_months_ago: 0.0
+                  sum_non_employer_income_9_months_ago: 267.88
+                  sum_non_employer_income_current_month: 3225.47
+                  sum_non_employer_income_previous_month: 1702.11
+                  sum_other_loan_payments_10_months_ago: 0.0
+                  sum_other_loan_payments_11_months_ago: 0.0
+                  sum_other_loan_payments_12_months_ago: 0.0
+                  sum_other_loan_payments_2_months_ago: 0.0
+                  sum_other_loan_payments_3_months_ago: 0.0
+                  sum_other_loan_payments_4_months_ago: 0.0
+                  sum_other_loan_payments_5_months_ago: 0.0
+                  sum_other_loan_payments_6_months_ago: 0.0
+                  sum_other_loan_payments_7_months_ago: 0.0
+                  sum_other_loan_payments_8_months_ago: 0.0
+                  sum_other_loan_payments_9_months_ago: 0.0
+                  sum_other_loan_payments_current_month: 0.0
+                  sum_other_loan_payments_previous_month: 0.0
+                  sum_pension_income_10_months_ago: 0.0
+                  sum_pension_income_11_months_ago: 0.0
+                  sum_pension_income_12_months_ago: 0.0
+                  sum_pension_income_2_months_ago: 0.0
+                  sum_pension_income_3_months_ago: 0.0
+                  sum_pension_income_4_months_ago: 0.0
+                  sum_pension_income_5_months_ago: 0.0
+                  sum_pension_income_6_months_ago: 0.0
+                  sum_pension_income_7_months_ago: 0.0
+                  sum_pension_income_8_months_ago: 0.0
+                  sum_pension_income_9_months_ago: 0.0
+                  sum_pension_income_current_month: 0.0
+                  sum_pension_income_previous_month: 0.0
+                  sum_social_assistance_income_10_months_ago: 0.0
+                  sum_social_assistance_income_11_months_ago: 0.0
+                  sum_social_assistance_income_12_months_ago: 0.0
+                  sum_social_assistance_income_2_months_ago: 0.0
+                  sum_social_assistance_income_3_months_ago: 0.0
+                  sum_social_assistance_income_4_months_ago: 0.0
+                  sum_social_assistance_income_5_months_ago: 0.0
+                  sum_social_assistance_income_6_months_ago: 0.0
+                  sum_social_assistance_income_7_months_ago: 0.0
+                  sum_social_assistance_income_8_months_ago: 0.0
+                  sum_social_assistance_income_9_months_ago: 0.0
+                  sum_social_assistance_income_current_month: 0.0
+                  sum_social_assistance_income_previous_month: 0.0
+                  sum_student_loan_payments_10_months_ago: 0.0
+                  sum_student_loan_payments_11_months_ago: 0.0
+                  sum_student_loan_payments_12_months_ago: 0.0
+                  sum_student_loan_payments_2_months_ago: 0.0
+                  sum_student_loan_payments_3_months_ago: 0.0
+                  sum_student_loan_payments_4_months_ago: 0.0
+                  sum_student_loan_payments_5_months_ago: 0.0
+                  sum_student_loan_payments_6_months_ago: 0.0
+                  sum_student_loan_payments_7_months_ago: 0.0
+                  sum_student_loan_payments_8_months_ago: 0.0
+                  sum_student_loan_payments_9_months_ago: 0.0
+                  sum_student_loan_payments_current_month: 0.0
+                  sum_student_loan_payments_previous_month: 0.0
+                  sum_telecom_payments_10_months_ago: 0.0
+                  sum_telecom_payments_11_months_ago: 0.0
+                  sum_telecom_payments_12_months_ago: 0.0
+                  sum_telecom_payments_2_months_ago: 0.0
+                  sum_telecom_payments_3_months_ago: 0.0
+                  sum_telecom_payments_4_months_ago: 0.0
+                  sum_telecom_payments_5_months_ago: 0.0
+                  sum_telecom_payments_6_months_ago: 0.0
+                  sum_telecom_payments_7_months_ago: 0.0
+                  sum_telecom_payments_8_months_ago: 0.0
+                  sum_telecom_payments_9_months_ago: 0.0
+                  sum_telecom_payments_current_month: 0.0
+                  sum_telecom_payments_previous_month: 11596.74
+                  sum_total_income: 83816.09
+                  sum_total_income_10_months_ago: 3776.11
+                  sum_total_income_11_months_ago: 3950.19
+                  sum_total_income_12_months_ago: 0.0
+                  sum_total_income_2_months_ago: 32197.6
+                  sum_total_income_3_months_ago: 4517.42
+                  sum_total_income_4_months_ago: 7096.69
+                  sum_total_income_5_months_ago: 4227.87
+                  sum_total_income_6_months_ago: 4475.84
+                  sum_total_income_7_months_ago: 4447.21
+                  sum_total_income_8_months_ago: 3700.8
+                  sum_total_income_9_months_ago: 6222.78
+                  sum_total_income_current_month: 3225.47
+                  sum_total_income_previous_month: 5978.11
+                  sum_utility_payments_10_months_ago: 0.0
+                  sum_utility_payments_11_months_ago: 0.0
+                  sum_utility_payments_12_months_ago: 0.0
+                  sum_utility_payments_2_months_ago: 0.0
+                  sum_utility_payments_3_months_ago: 0.0
+                  sum_utility_payments_4_months_ago: 0.0
+                  sum_utility_payments_5_months_ago: 0.0
+                  sum_utility_payments_6_months_ago: 0.0
+                  sum_utility_payments_7_months_ago: 0.0
+                  sum_utility_payments_8_months_ago: 0.0
+                  sum_utility_payments_9_months_ago: 0.0
+                  sum_utility_payments_current_month: 0.0
+                  sum_utility_payments_previous_month: 0.0
+                  sum_wsib_income_10_months_ago: 0.0
+                  sum_wsib_income_11_months_ago: 0.0
+                  sum_wsib_income_12_months_ago: 0.0
+                  sum_wsib_income_2_months_ago: 0.0
+                  sum_wsib_income_3_months_ago: 0.0
+                  sum_wsib_income_4_months_ago: 0.0
+                  sum_wsib_income_5_months_ago: 0.0
+                  sum_wsib_income_6_months_ago: 0.0
+                  sum_wsib_income_7_months_ago: 0.0
+                  sum_wsib_income_8_months_ago: 0.0
+                  sum_wsib_income_9_months_ago: 0.0
+                  sum_wsib_income_current_month: 0.0
+                  sum_wsib_income_previous_month: 0.0
+                  wsib_income_frequency: NONE_DETECTED
+                  active_days_trend_simple: INCREASING
+                  auto_loan_payment_average: 0.0
+                  average_child_support_income_government_deposit: 1951.3
+                  student_loan_payments_average: 0.0
+                  employer_a_income_trend_simple: NONE_DETECTED
+                  employer_b_income_trend_simple: NONE_DETECTED
+                  employer_other_income_simple: NONE_DETECTED
+                  last_2_social_assistance_income_dates: NONE_DETECTED
+                  last_2_employment_insurance_income_dates: NONE_DETECTED
+                  last_2_wsib_income_dates: NONE_DETECTED
+                  last_2_pension_income_dates: NONE_DETECTED
+                  last_2_child_support_income_government_dates: 2026-04-09, 2026-03-26
+                  last_2_disability_income_dates: NONE_DETECTED
+                  mortgage_frequency: Unknown
+                  mortgage_payments_average: 1195.89
+                  sum_child_support_income_government: 3902.59
+                  sum_disability_income: 0.0
+                  sum_employment_insurance_income: 0.0
+                  sum_pension_income: 0.0
+                  sum_social_assistance_income: 0.0
+                  sum_wsib_income: 0.0
+                  student_loan_payments_frequency: NONE_DETECTED
+                  telecom_payments_frequency: Unknown
+                  telecom_payments_average: 11596.74
+                  other_loan_payments_frequency: NONE_DETECTED
+                  other_loan_payments_average: 0.0
+                  utility_payments_frequency: NONE_DETECTED
+                  utility_payments_average: 0.0
+                  average_monthly_insurance_income_complex: 0.0
+                  average_monthly_nsf_overdraft_protection_fees: 0.0
+                  average_monthly_nsf_overdraft_protection_fees_complex: 0.0
+                  count_nsf_overdraft_protection_fees_10_months_ago: 0
+                  count_nsf_overdraft_protection_fees_11_months_ago: 0
+                  count_nsf_overdraft_protection_fees_12_months_ago: 0
+                  count_nsf_overdraft_protection_fees_180_days: 0
+                  count_nsf_overdraft_protection_fees_2_months_ago: 0
+                  count_nsf_overdraft_protection_fees_30_days: 0
+                  count_nsf_overdraft_protection_fees_365_days: 0
+                  count_nsf_overdraft_protection_fees_3_months_ago: 0
+                  count_nsf_overdraft_protection_fees_4_months_ago: 0
+                  count_nsf_overdraft_protection_fees_5_months_ago: 0
+                  count_nsf_overdraft_protection_fees_60_days: 0
+                  count_nsf_overdraft_protection_fees_6_months_ago: 0
+                  count_nsf_overdraft_protection_fees_7_months_ago: 0
+                  count_nsf_overdraft_protection_fees_8_months_ago: 0
+                  count_nsf_overdraft_protection_fees_90_days: 0
+                  count_nsf_overdraft_protection_fees_9_months_ago: 0
+                  count_nsf_overdraft_protection_fees_current_month: 0
+                  count_nsf_overdraft_protection_fees_previous_month: 0
+                  last_2_nsf_overdraft_protection_fees_dates: NONE_DETECTED
+                  nbr_nsf_overdraft_protection: 0
+                  nsf_overdraft_protection_fees_average: 0.0
+                  nsf_overdraft_protection_fees_frequency: NONE_DETECTED
+                  nsf_overdraft_protection_fees_trend: 0.0
+                  nsf_overdraft_protection_fees_trend_simple: NONE_DETECTED
+                  sum_nsf_overdraft_protection_fees: 0.0
+                  sum_nsf_overdraft_protection_fees_10_months_ago: 0.0
+                  sum_nsf_overdraft_protection_fees_11_months_ago: 0.0
+                  sum_nsf_overdraft_protection_fees_12_months_ago: 0.0
+                  sum_nsf_overdraft_protection_fees_180_days: 0.0
+                  sum_nsf_overdraft_protection_fees_2_months_ago: 0.0
+                  sum_nsf_overdraft_protection_fees_30_days: 0.0
+                  sum_nsf_overdraft_protection_fees_365_days: 0.0
+                  sum_nsf_overdraft_protection_fees_3_months_ago: 0.0
+                  sum_nsf_overdraft_protection_fees_4_months_ago: 0.0
+                  sum_nsf_overdraft_protection_fees_5_months_ago: 0.0
+                  sum_nsf_overdraft_protection_fees_60_days: 0.0
+                  sum_nsf_overdraft_protection_fees_6_months_ago: 0.0
+                  sum_nsf_overdraft_protection_fees_7_months_ago: 0.0
+                  sum_nsf_overdraft_protection_fees_8_months_ago: 0.0
+                  sum_nsf_overdraft_protection_fees_90_days: 0.0
+                  sum_nsf_overdraft_protection_fees_9_months_ago: 0.0
+                  sum_nsf_overdraft_protection_fees_current_month: 0.0
+                  sum_nsf_overdraft_protection_fees_previous_month: 0.0
+                  count_reversed_payments_because_of_nsf: 0
+                  AttributesDetail:
+                  - Attribute: count_child_support_income_government_current_month
+                    Transactions:
+                    - TransactionId: 2e9e3ea2-c918-4302-8dc1-738672c4e177
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-04-09'
+                      Description: 3903214 CANADA
+                      Credit: 2200.48
+                      Balance: 3773.07
+                  - Attribute: count_child_support_income_government_previous_month
+                    Transactions:
+                    - TransactionId: d8d668eb-77ba-4b60-8e1a-375ba0e669cc
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2026-03-26'
+                      Description: 3903214 CANADA
+                      Credit: 1702.11
+                      Balance: 3348.09
+                  - Attribute: count_employer_a_income_10_months_ago
+                    Transactions:
+                    - TransactionId: ea9286f8-c449-4418-a402-2a534abf6d24
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2025-06-19'
+                      Description: Paie/Payroll
+                      Credit: 1736.15
+                      Balance: 1746.63
+                    - TransactionId: bf673474-4de2-4ca2-b2d0-6ac09c0eda12
+                      AccountId: 9141fa5d-9a0b-42cc-9f38-29231ad9c47d
+                      Date: '2025-06-05'
+                      Description: Paie/Payroll
+                      Credit: 2039.96
+                      Balance: 2114.48
+                Login:
+                  Username: multiple_employers
+                  IsScheduledRefresh: false
+                  LastRefresh: '2026-04-16T09:23:14.5821093'
+                  Type: Personal
+                  Id: 367046b0-7699-483d-94c2-08d9a3d5c70f
+                RequestId: b0ad6069-b40c-4c7e-aead-91c849d0b9f1
+        '202':
+          description: Operation Pending
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  FlinksCode:
+                    type: string
+                    description: Flinks-specific status code.
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response (202).
+                  Message:
+                    type: string
+                    description: Message indicating the operation is still processing.
+                  RequestId:
+                    type: string
+                    description: Unique identifier for the request.
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Message:
+                    type: string
+                    description: Error message indicating the customer ID is not authorized for the login ID.
 components:
-  schemas:
-    CategorizationResponse:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-        Categories:
-          type: array
-          items:
-            $ref: '#/components/schemas/Category'
-    Category:
-      type: object
-      properties:
-        Name:
-          type: string
-        Amount:
-          type: number
-        Count:
-          type: integer
-    RequestIdBody:
-      type: object
-      properties:
-        RequestId:
-          type: string
-          format: uuid
-          description: RequestId returned by /Authorize.
-      required:
-      - RequestId
   securitySchemes:
-    flinks_auth_key:
+    XApiKey:
       type: apiKey
       in: header
-      name: flinks-auth-key
-      description: Short-lived (30-minute) authorize token obtained from /GenerateAuthorizeToken.
+      name: x-api-key
+      description: Optional security feature (must be enabled by Flinks). Contact your Flinks representative to activate.

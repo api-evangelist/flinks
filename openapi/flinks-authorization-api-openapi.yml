@@ -1,0 +1,852 @@
+openapi: 3.2.0
+info:
+  title: Flinks Authorization API
+  description: 'Flinks API provides financial data connectivity, enrichment, and payment solutions.
+
+
+    ## Authentication
+
+    Endpoints require authentication using `flinks-auth-key` header (Bearer token).
+
+
+    For more information, visit: https://docs.flinks.com'
+  version: 3.0.0
+  contact:
+    name: Flinks Support
+    url: https://www.flinks.com/contact/sales
+  termsOfService: https://www.flinks.com
+servers:
+- url: https://{instance}-api.private.fin.ag
+  description: Flinks API Environment
+  variables:
+    instance:
+      default: toolbox
+      description: The environment instance (e.g., toolbox, sandbox, production)
+tags:
+- name: Authorization
+  description: Endpoints for generating authorization tokens and authenticating requests
+paths:
+  /v3/{customerId}/partnerdata/{LoginId}/{AccountId}:
+    get:
+      tags:
+      - Authorization
+      summary: Get Partner Data
+      description: Use the /PartnerData endpoint if you are a client of Flinks and want to grant access for a partner to retrieve data that is processed by Flinks. This endpoint generates a unique Access Token that's associated with a specific user.
+      operationId: getPartnerData
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: Key that grants access to the environment specified in the instance field. By default, the value is set to the toolbox environment key.
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+      - name: LoginId
+        in: path
+        required: true
+        description: Unique identifier that represents a specific user. This value is available after successfully calling the /Authorize endpoint.
+        schema:
+          type: string
+      - name: AccountId
+        in: path
+        required: true
+        description: Unique identifier that represents a specific user account.
+        schema:
+          type: string
+      - name: Authorization
+        in: header
+        required: false
+        description: Contains the Bearer Token (the API secret key that Flinks provides you with).
+        schema:
+          type: string
+          default: Bearer {API Secret}
+      security: []
+      responses:
+        '200':
+          description: Response Body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  RequestId:
+                    type: string
+                    description: Unique identifier for this request.
+                  AccessToken:
+                    type: string
+                    description: The unique Access Token that your partner can use to retrieve data for the specific user.
+                  Date:
+                    type: string
+                    description: Timestamp when the Access Token was created.
+                  ExpirationDate:
+                    type: string
+                    description: Timestamp when the Access Token expires (30 days from creation).
+              example:
+                RequestId: 565c7b7a-fc01-45a1-aa7d-baaaa703a51b
+                AccessToken: 6087f84c-15ba-4113-82aa-a9d22ea6caac
+                Date: '2023-04-11T15:04:43.3464411Z'
+                ExpirationDate: '2023-05-12T19:09:02.9650245Z'
+        '400':
+          description: Response Body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  ValidationDetails:
+                    type: object
+                    description: Validation error details.
+                    properties:
+                      loginId:
+                        type: array
+                        items:
+                          type: string
+                        description: Validation error messages for the loginId or accountId.
+                      accountId:
+                        type: array
+                        items:
+                          type: string
+                        description: Validation error messages for the accountId.
+                  FlinksCode:
+                    type: string
+                    description: Flinks-specific error code (e.g., INVALID_REQUEST).
+              examples:
+                InvalidLoginId:
+                  value:
+                    HttpStatusCode: 400
+                    ValidationDetails:
+                      loginId:
+                      - This loginId doesn't exist.
+                    FlinksCode: INVALID_REQUEST
+                InvalidAccountId:
+                  value:
+                    HttpStatusCode: 400
+                    ValidationDetails:
+                      accountId:
+                      - This accountId doesn't exist within the Card.
+                    FlinksCode: INVALID_REQUEST
+  /v3/{customerId}/partnerdata/authsecret/{nameofpartner}:
+    get:
+      tags:
+      - Authorization
+      summary: Generate Auth Secret
+      description: Use the /AuthSecret endpoint if you are a client of Flinks and want to grant access for a partner to retrieve data that is processed by Flinks. This endpoint generates a unique authorization token that your partner can use to securely access Flinks APIs.
+      operationId: generateAuthSecret
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: Key that grants access to the environment specified in the instance field. By default, the value is set to the Sandbox environment key.
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+      - name: nameofpartner
+        in: path
+        required: true
+        description: Name that you want to assign to this partner. If this field is left empty, the default value is `PartnerTest`.
+        schema:
+          type: string
+          default: PartnerTest
+      - name: Authorization
+        in: header
+        required: false
+        description: Contains the Bearer Token (the API secret key that Flinks provides you with).
+        schema:
+          type: string
+          default: Bearer {API Secret}
+      security: []
+      responses:
+        '200':
+          description: Response Body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  RequestId:
+                    type: string
+                    description: Unique identifier for this request.
+                  PermissionId:
+                    type: string
+                    description: Unique identifier used to revoke access to Flinks APIs by disabling the authorization token. Save this value.
+                  AuthSecret:
+                    type: string
+                    description: The unique authorization token that your partner can use to securely access Flinks APIs.
+                  Message:
+                    type: string
+                    description: Success message confirming the token was generated.
+              example:
+                RequestId: 403cf9b2-9fda-441e-ac8b-b8346eb319ff
+                PermissionId: 058cb857-777e-4e68-96a8-33f7f2e09465
+                AuthSecret: e17778dc-a592-409e-a752-ee276b106f4c
+                Message: The partner authorization secret was generated successfully.
+        '400':
+          description: Response Body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  ValidationDetails:
+                    type: object
+                    description: Validation error details.
+                    properties:
+                      externalPartnerName:
+                        type: array
+                        items:
+                          type: string
+                        description: Validation error messages for the partner name.
+                  FlinksCode:
+                    type: string
+                    description: Flinks-specific error code (e.g., INVALID_REQUEST).
+              example:
+                HttpStatusCode: 400
+                ValidationDetails:
+                  externalPartnerName:
+                  - The externalPartnerName needs to contain at least 3 characters and no numbers.
+                FlinksCode: INVALID_REQUEST
+  /v3/{customerId}/partnerdata/authsecret/disable/{permissionId}:
+    get:
+      tags:
+      - Authorization
+      summary: Disable Auth Secret
+      description: Use the /AuthSecret/Disable endpoint if you are a client of Flinks and want to revoke access from a partner that you have previously granted access to.
+      operationId: disableAuthSecret
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: Key that grants access to the environment specified in the instance field. By default, the value is set to the toolbox environment key.
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+      - name: permissionId
+        in: path
+        required: true
+        description: Revokes access to Flinks APIs for the partner it's associated with.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Response Body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permissionId:
+                    type: string
+                    description: The permission ID that was disabled.
+                  authSecret:
+                    type: string
+                    description: The authorization token that was disabled.
+                  message:
+                    type: string
+                    description: Success message confirming the partner authorization was disabled.
+              example:
+                permissionId: d68aa9e7-1fb3-46be-a4f6-6dfd9b7052c8
+                authSecret: 55e387aa-4f2b-4b78-b568-222db22b96e6
+                message: The partner authorization was disabled successfully.
+        '400':
+          description: Response Body
+          content:
+            application/json:
+              schema:
+                type: object
+              example: {}
+  /v3/{customerId}/partnerdata/authsecret/enable/{permissionId}:
+    get:
+      tags:
+      - Authorization
+      summary: Enable Auth Secret
+      description: Use the /AuthSecret/Enable endpoint if you are a client of Flinks and want to re-enable a partner's Auth Secret to provide access to data that is processed through Flinks.
+      operationId: enableAuthSecret
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: Key that grants access to the environment specified in the instance field. By default, the value is set to the toolbox environment key.
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+      - name: permissionId
+        in: path
+        required: true
+        description: Revokes access to Flinks APIs for the partner it's associated with.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Response Body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permissionId:
+                    type: string
+                    description: The permission ID that was re-enabled.
+                  authSecret:
+                    type: string
+                    description: The authorization token that was re-enabled.
+                  message:
+                    type: string
+                    description: Success message confirming the partner authorization was re-enabled.
+              example:
+                permissionId: d68aa9e7-1fb3-46be-a4f6-6dfd9b7052c8
+                authSecret: 55e387aa-4f2b-4b78-b568-222db22b96e6
+                message: The partner authorization was re-enabled successfully.
+        '400':
+          description: Response Body
+          content:
+            application/json:
+              schema:
+                type: object
+              example: {}
+  /partneraccess/{accesstoken}:
+    get:
+      tags:
+      - Authorization
+      summary: Partner Access
+      description: Retrieve shared user data through Flinks APIs using a partner access token.
+      operationId: partnerAccess
+      parameters:
+      - name: accesstoken
+        in: path
+        required: true
+        description: The access token provided by the partner.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  GetAccountsDetail:
+                    type: object
+                    description: The data that you retrieved from the endpoint.
+                  RequestId:
+                    type: string
+                    description: Unique identifier for this request.
+              example:
+                GetAccountsDetail:
+                - LoginId: eceae0c0-1ed3-468f-ae30-08d6decf1675
+                  CustomerId: 43387ca6-0391-4c82-857d-70d95f087ecb
+                RequestId: 12345678-1234-1234-1234-123456789012
+        '400':
+          description: Response Body
+          content:
+            application/json:
+              schema:
+                type: object
+              example: {}
+  /v3/oauth/authorize:
+    get:
+      tags:
+      - Authorization
+      summary: OAuth Authorize
+      security: []
+      description: Use the /OAuth/Authorize endpoint if you are using a custom API integration and want to establish a secure connection using OAuth 2.0 technology.
+      operationId: oauthAuthorize
+      parameters:
+      - name: institution_id
+        in: query
+        required: false
+        description: The end-user's financial institution.
+        schema:
+          type: string
+      - name: redirect_uri
+        in: query
+        required: false
+        description: URL that redirects the end-user back to your app or website after completing the OAuth flow.
+        schema:
+          type: string
+      - name: state
+        in: query
+        required: false
+        description: A unique string that you can randomly generate and link to this request to establish legitimacy. For the request to be successful, this string must be validated to confirm it's being passed with the correct request. The value of this field can be anything you want. This is an OAuth 2.0 standard and adds an extra layer of security.
+        schema:
+          type: string
+      - name: lang
+        in: query
+        required: false
+        description: 'Two-character abbreviation that specifies the language. Possible values include: - `en` = English - `fr` = French If this field is left empty, the default value is set to `en`.'
+        schema:
+          type: string
+          default: en
+      - name: tag
+        in: query
+        required: false
+        description: Custom name that's assigned to the request for identification and tracking purposes.
+        schema:
+          type: string
+      - name: recipientId
+        in: query
+        required: false
+        description: Specifies the Data Recipient who receives the data, only if the instance is associated with multiple Data Recipients.
+        schema:
+          type: string
+      - name: Accept
+        in: header
+        required: true
+        description: Acceptable response media type.
+        schema:
+          type: string
+          default: text/plain
+      responses:
+        '302':
+          description: Redirect Response
+          content:
+            text/html:
+              schema:
+                type: string
+              example: "<html>\n<head>\n  <title>Submit Form</title>\n  <meta name=\"referrer\" content=\"origin\" />\n  <meta http-equiv=\"x-ua-compatible\" content=\"IE=edge\" />\n</head>\n<body onload=\"javascript:document.forms[0].submit()\">\n  <noscript>\n    <p>\n      <strong>Note:</strong> Since your browser does not support JavaScript, you must press the Resume button once to proceed.\n    </p>\n  </noscript>\n  <form method=\"post\" action=\"https://ob.flinksapp.com/api/v1/agentless\">\n    <input type=\"hidden\" name=\"REF\" value=\"613D213BC21A4480DBC844AABC852EFDB129387225AE7317A77B7A56400C\"/>\n    <input type=\"hidden\" name=\"allowInteraction\" value=\"true\"/>\n    <input type=\"hidden\" name=\"scope\" value=\"ACCOUNT_BASIC ACCOUNT_DETAILED ACCOUNT_PAYMENTS INVESTMENTS TRANSACTIONS STATEMENTS CUSTOMER_CONTACT CUSTOMER_PERSONAL\"/>\n    <input type=\"hidden\" name=\"provider_id\" value=\"4003\"/>\n    <input type=\"hidden\" name=\"response_type\" value=\"code\"/>\n    <input type=\"hidden\" name=\"connectionId\" value=\"dc-patrfyrs91n711c9jlmtsru97\"/>\n    <input type=\"hidden\" name=\"redirect_uri\" value=\"https://toolbox-api.private.fin.ag/v3/43387ca6-0391-4c82-857d-70d95f087ecb/openbanking/callback\"/>\n    <input type=\"hidden\" name=\"state\" value=\"jc1LCoAwDADRu2Rtjdag4G1i2qJYP7QBFfHuegT385gbJuiha9vKSk3GO7KGXNcYdhSMdQ1XQrUEClBA+tJRdc894s7XMem4XAOvcynbglk5KfpTfVo5onCMA8v8ufx38bw=\"/>\n    <input type=\"hidden\" name=\"resumePath\" value=\"/as/1PT1G/resume/as/authorization.ping\"/>\n    <input type=\"hidden\" name=\"lang\" value=\"en\"/>\n    <input type=\"hidden\" name=\"client_id\" value=\"dc-patrfyrs91n711c9jlmtsru97\"/>\n    <input type=\"hidden\" name=\"reauth\" value=\"false\"/>\n    <noscript><input type=\"submit\" value=\"Resume\"/></noscript>\n  </form>\n</body>\n</html>\n"
+        '400':
+          description: Response Body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lang:
+                    type: array
+                    items:
+                      type: string
+                    description: Validation error messages for the lang parameter.
+              example:
+                lang:
+                - The field Lang must be a valid ISO-639-1 two letter code.
+  /v3/{customerId}/BankingServices/AnswerMFAQuestions:
+    patch:
+      tags:
+      - Authorization
+      summary: Answer MFA Questions
+      description: 'The `AnswerMFAQuestions` endpoint allows you to submit responses to multi-factor authentication questions in order to complete the authentication process and refresh the associated financial card.
+
+
+        **Availability:**
+
+        This endpoint is supported only in Canada and only for institutions using simple security questions as their MFA method.
+
+
+        **Note:** This endpoint is specific to the Enhanced MFA flow, which preemptively collects simple security question answers to improve Nightly Refresh success. It does not handle advanced MFA types such as two-step verification, push notifications, or other specialized authentication mechanisms. Those are fully supported through Flinks'' standard authentication flow via the /Authorize endpoint and Flinks Connect.'
+      operationId: answerMFAQuestions
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: Key that grants access to the environment specified in the instance field. By default, the value is set to the toolbox environment key.
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                loginId:
+                  type: string
+                  description: The loginId you received after successfully connecting a customer account.
+                Questions:
+                  type: array
+                  description: Your MFA questions. This is an array of objects, where each object contains a Question and Answer field.
+                  items:
+                    type: object
+                    properties:
+                      Question:
+                        type: string
+                        description: The security question text.
+                      Answer:
+                        type: string
+                        description: The answer to the security question.
+              example: {}
+      responses:
+        '200':
+          description: Confirmation message indicating that the answers were updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Message:
+                    type: string
+                    description: Confirmation message indicating that the answers were updated successfully.
+              example:
+                Message: Answers updated
+        '400':
+          description: Error message describing the issue.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                    description: HTTP status code of the response.
+                  Message:
+                    type: string
+                    description: Error message describing the issue.
+                  FlinksCode:
+                    type: string
+                    description: 'Flinks-specific error code: `INVALID_REQUEST`.'
+              example:
+                HttpStatusCode: 400
+                Message: The login 'bb8b8569-3bfc-43c1-ae31-08d6de7f1675' is invalid.
+                FlinksCode: INVALID_REQUEST
+  /v3/{customerId}/BankingServices/GenerateAuthorizeToken:
+    post:
+      tags:
+      - Authorization
+      summary: Generate Authorize Token
+      description: Use the /GenerateAuthorizeToken endpoint to get an Authorize Token (the RequestId) that's valid for 30 minutes.
+      operationId: generateAuthorizeToken
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: Unique GUID provided by Flinks that grants you access to the environment specified in the instance field.
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+      - name: flinks-auth-key
+        in: header
+        required: true
+        description: Your secret key (provided by Flinks during integration setup). Used only on this endpoint to generate a one-time authorize token; on `/Authorize`, pass the generated token instead.
+        schema:
+          type: string
+          example: c4569c54-e167-4d34-8de6-f4113bc82414
+          default: c4569c54-e167-4d34-8de6-f4113bc82414
+      - name: Content-Type
+        in: header
+        required: true
+        description: Content type of the request.
+        schema:
+          type: string
+          default: application/json
+      - name: Accept
+        in: header
+        required: true
+        description: Acceptable response media type.
+        schema:
+          type: string
+          default: application/json
+      security: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                  Token:
+                    type: string
+              example:
+                HttpStatusCode: 200
+                Token: d65f1adb-8ebc-48dc-be8b-20c773ba1565
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HttpStatusCode:
+                    type: integer
+                  Message:
+                    type: string
+                  FlinksCode:
+                    type: string
+              example:
+                HttpStatusCode: 401
+                Message: You must provide a valid auth key
+                FlinksCode: UNAUTHORIZED
+  /v3/{customerId}/BankingServices/Authorize:
+    post:
+      tags:
+      - Authorization
+      summary: Authorize
+      parameters:
+      - name: flinks-auth-key
+        in: header
+        required: true
+        description: Authorize token (one-time, 15-minute lifetime) generated by [/GenerateAuthorizeToken](./generate-authorize-token). Do not pass your secret key here. The secret key is only used when generating the token.
+        schema:
+          type: string
+          example: d65f1adb-8ebc-48dc-be8b-20c773ba1565
+          default: d65f1adb-8ebc-48dc-be8b-20c773ba1565
+      - name: Content-Type
+        in: header
+        required: false
+        description: Content type of the request.
+        example: application/json
+        schema:
+          type: string
+          default: application/json
+          example: application/json
+      - name: Accept
+        in: header
+        required: false
+        description: Acceptable response media type.
+        example: application/json
+        schema:
+          type: string
+          default: application/json
+          example: application/json
+      - name: customerId
+        in: path
+        required: true
+        description: Unique GUID provided by Flinks that grants you access to the environment specified in the instance field. By default, the value is the key for the toolbox environment.
+        example: 43387ca6-0391-4c82-857d-70d95f087ecb
+        schema:
+          type: string
+          default: 43387ca6-0391-4c82-857d-70d95f087ecb
+          example: 43387ca6-0391-4c82-857d-70d95f087ecb
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizeRequest'
+      responses:
+        '200':
+          description: Authorization successful - Session opened and RequestId can be used for subsequent data calls
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizeResponse200'
+        '203':
+          description: Multi-Factor Authentication (MFA) required - Collect user's answers and call /Authorize again
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizeResponse203'
+        '400':
+          description: Bad Request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                HttpStatusCode: 400
+                Message: The LoginId provided is either invalid or does not belong to the CustomerId.
+                FlinksCode: INVALID_LOGIN
+        '401':
+          description: Unauthorized - Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                questionNotFound:
+                  summary: Question not found
+                  value:
+                    HttpStatusCode: 401
+                    Message: Question not found
+                    FlinksCode: QUESTION_NOT_FOUND
+                disabledLogin:
+                  summary: Disabled login
+                  value:
+                    HttpStatusCode: 401
+                    Message: Login has been disabled
+                    FlinksCode: DISABLED_LOGIN
+      operationId: postV3ByCustomerIdBankingServicesAuthorize
+      x-operation-id-source: derived
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        HttpStatusCode:
+          type: integer
+        Message:
+          type: string
+        FlinksCode:
+          type: string
+    Login:
+      type: object
+      description: End user's technical login information
+      properties:
+        Id:
+          type: string
+          format: uuid
+          example: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+        Username:
+          type: string
+          example: greatday
+        IsScheduledRefresh:
+          type: boolean
+          default: false
+          example: false
+        LastRefresh:
+          type: string
+          format: date-time
+          example: '2026-01-21T20:47:47.145999'
+        Type:
+          type:
+          - string
+          - 'null'
+          example: Personal
+    AuthorizeResponse200:
+      type: object
+      properties:
+        HttpStatusCode:
+          type: integer
+          description: HTTP status code
+          example: 200
+        Links:
+          type: array
+          description: List of available data endpoints
+          items:
+            $ref: '#/components/schemas/Link'
+          example:
+          - rel: AccountsDetail
+            href: /GetAccountsDetail
+            example: null
+          - rel: AccountsSummary
+            href: /GetAccountsSummary
+            example: null
+          - rel: Statements
+            href: /GetStatements
+            example: null
+        InstitutionName:
+          type: string
+          description: Name of the financial institution
+          example: FlinksCapital
+        Login:
+          allOf:
+          - $ref: '#/components/schemas/Login'
+          example:
+            Username: Greatday
+            IsScheduledRefresh: false
+            LastRefresh: '2026-01-21T20:47:47.145999'
+            Type: Personal
+            Id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+        InstitutionId:
+          type: integer
+          description: Unique identifier of the financial institution
+          example: 14
+        Institution:
+          type: string
+          description: Name of the financial institution
+          example: FlinksCapital
+        RequestId:
+          type: string
+          format: uuid
+          description: Unique request identifier used for subsequent data calls
+          example: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    AuthorizeRequest:
+      type: object
+      example:
+        LoginId: 5e115eac-1209-4f19-641c-08d6d484e2fe
+        MostRecentCached: true
+      properties:
+        LoginId:
+          type: string
+          description: 'Identifier returned by Flinks Connect after a successful customer authentication. Use this in combination with `MostRecentCached: true` to open a session against the cached data aggregated by the widget. This is the recommended flow for most integrations.'
+          example: 5e115eac-1209-4f19-641c-08d6d484e2fe
+        MostRecentCached:
+          type: boolean
+          description: 'Controls how the session is opened. `true` = cached mode (recommended): pair with `LoginId` to retrieve the most recently aggregated data for a customer. `false` = live mode: initiates a fresh live connection to the financial institution; typically used for manual refresh or direct API (legacy) integrations with `Username`/`Password`.'
+          default: true
+          example: true
+        Username:
+          type: string
+          description: Username used to connect to the financial institution. Only used for direct API (legacy) integrations when `MostRecentCached` is `false`. Flinks Connect handles authentication for the widget integration path.
+          example: greatday
+        Password:
+          type: string
+          description: Password used to connect to the financial institution. Only used for direct API (legacy) integrations when `MostRecentCached` is `false`.
+          example: everyday
+        Institution:
+          type: string
+          description: Unique identifier of the financial institution. Only required for direct API (legacy) integrations. The widget sets this automatically.
+          example: FlinksCapital
+        Language:
+          type: string
+          description: Preferred language for the connection process (en | fr)
+          default: en
+          example: en
+        Save:
+          type: boolean
+          description: If set to true, all collected data and credentials will be saved after the request is completed.
+          default: true
+          example: true
+        Tag:
+          type: string
+          description: Custom string to attach to a specific request.
+        RequestId:
+          type: string
+          format: uuid
+          description: Required for MFA. Pass the RequestId received in the 203 response.
+        SecurityResponses:
+          type: object
+          description: Pass this parameter if you received a 203 response from the /Authorize endpoint and are calling it a second time to complete MFA questions. This parameter contains the user's responses to the MFA questions, where keys are the prompts and values are arrays of answers.
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    Link:
+      type: object
+      properties:
+        rel:
+          type: string
+          description: Relationship type of the link
+          example: AccountsDetail
+        href:
+          type: string
+          description: Endpoint path
+          example: /GetAccountsDetail
+        example:
+          type:
+          - string
+          - 'null'
+          example: null
+    AuthorizeResponse203:
+      type: object
+      properties:
+        Links:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        HttpStatusCode:
+          type: integer
+          example: 203
+        SecurityChallenges:
+          type: array
+          description: List of security questions that need to be answered
+          items:
+            $ref: '#/components/schemas/SecurityChallenge'
+        Institution:
+          type: string
+          example: FlinksCapital
+        RequestId:
+          type: string
+          format: uuid
+          example: 9022abc2-8a2e-4b06-a06e-c3e5449c4d10
+    SecurityChallenge:
+      type: object
+      description: User's response to a security challenge, where keys are the prompts and values are arrays of answers.
+      additionalProperties:
+        type: array
+        items:
+          type: string
+  securitySchemes:
+    XApiKey:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: Optional security feature (must be enabled by Flinks). Contact your Flinks representative to activate.
