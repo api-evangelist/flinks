@@ -850,3 +850,9 @@ components:
       in: header
       name: x-api-key
       description: Optional security feature (must be enabled by Flinks). Contact your Flinks representative to activate.
+x-provenance:
+  method: harvested
+  publisher: Flinks
+  source: https://docs.flinks.com/openapi.yaml
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)
