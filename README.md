@@ -1,0 +1,270 @@
+# Flinks (flinks)
+
+<!-- API-EVANGELIST-PROVENANCE:BEGIN -->
+> ### About this repository
+>
+> **This is not our API.** This repository is an independent, third-party profile of a company's
+> **publicly available** API surface, maintained by [API Evangelist](https://apievangelist.com).
+> API Evangelist does not operate, host, resell, or support this company's APIs, and is not
+> affiliated with or endorsed by the company unless stated on the profile.
+>
+> **Where the information came from.** Everything here is assembled from material a member of the
+> public can reach with a browser and no credentials — the company's own website, developer portal
+> and documentation, the specifications it publishes for public use (OpenAPI, AsyncAPI, JSON Schema,
+> `apis.json`, `llms.txt` and similar), its public repositories, and its public status, pricing and
+> changelog pages. **Nothing here is obtained by breaching a system, defeating an access control, or
+> using credentials of any kind.**
+>
+> **The rating is an independent assessment.** The Kin Score and Agent Readiness rating are
+> independently calculated scores of a company's *public* API artifacts, produced by API Evangelist
+> against a published rubric. They are not certifications, endorsements, security assessments, or
+> audits, and they score published artifacts — not the quality, safety, or security of the software.
+>
+> **Corrections, re-scores, and removal are free.** No partnership, contract, or purchase is
+> required, and you do not need to justify the request.
+>
+> - **Something wrong?** Open an issue on this repository, or email
+>   [info@apievangelist.com](mailto:info@apievangelist.com).
+> - **Published something new?** Ask for a re-score and we will re-run the rating.
+> - **Want the listing taken down?** Say so and we will honor it. The profile is reduced to your
+>   company name, a factual description, and a link to your own site, and the company is recorded as
+>   **unrated** — never scored zero for having asked.
+>
+> **Response times.** Acknowledgement within **one business day**; removal or restriction within
+> **two business days**; corrections and re-scores within **five business days**.
+>
+> **Not from the company, and here with a question?** You are welcome here — we would rather be the
+> front line and point you the right way than have a good report go nowhere. What this repository
+> can answer is narrow, though, so it is worth knowing who you are actually looking for:
+>
+> - **A question about how the API works, an account, billing, or a bug in the service** — that is
+>   the company's own support, not us. We profile this API; we do not operate it and cannot see
+>   your account.
+> - **A bug in an open-source project we only catalog** — file it on that project's own repository.
+>   This has happened with a real and correct bug report that reached us instead of the people who
+>   could fix it, which helped nobody.
+> - **Anything about this listing itself** — the description, the tags, the rating, a missing or
+>   wrong artifact — is ours. Open an issue here.
+> - **Not sure, or something general about API Evangelist or APIs.io** — open an issue on the
+>   [APIs.io Inbox](https://github.com/api-search/inbox) and we will route it.
+>
+> **This repository contains no software, and we will never ask you to download anything.** There is
+> no build, release, installer, or binary here — only text and machine-readable API descriptions, so
+> there is nothing here that can be "corrupt" or need "repairing". Any issue, comment, or email
+> claiming otherwise and offering a download link is not from us and is hostile. Do not follow the
+> link; it is a lure. Report it to GitHub and, if you like, tell us at
+> [info@apievangelist.com](mailto:info@apievangelist.com) so we can take it down.
+>
+> **On a security or compliance team?** Email
+> [info@apievangelist.com](mailto:info@apievangelist.com) with *security* in the subject line and
+> you will get a person, not a form. We will tell you exactly which public URLs this profile was
+> built from so your team can see the same surface we did, and we will take the listing down on
+> request while you work through it.
+>
+> Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
+<!-- API-EVANGELIST-PROVENANCE:END -->
+
+Flinks is a Canadian financial data platform (owned by National Bank of Canada) that lets businesses connect to consumer and business bank accounts to aggregate account, transaction, and statement data, verify identity, and derive income, credit-risk, and fraud analytics. Access begins with a Flinks Connect authentication session and a multi-step /Authorize (MFA) call, after which banking, enrichment, and analytics endpoints are invoked with the returned RequestId.
+
+**APIs.json:** [https://raw.githubusercontent.com/api-evangelist/flinks/refs/heads/main/apis.yml](https://raw.githubusercontent.com/api-evangelist/flinks/refs/heads/main/apis.yml)
+
+## Tags
+
+- Financial Data
+- Open Banking
+- Bank Aggregation
+- Fintech
+- Canada
+
+## Timestamps
+
+- **Created:** 2026-07-01
+- **Modified:** 2026-07-01
+
+## APIs
+
+### Flinks Authorize / Connect API
+
+Opens a banking session for a Flinks Connect LoginId. Handles the multi-step MFA flow - an initial /Authorize returns HTTP 203 with SecurityChallenges when a challenge is required, and a resubmission with RequestId and SecurityResponses returns HTTP 200 with the RequestId and Links used for subsequent data calls.
+
+- **Human URL:** [https://docs.flinks.com/api/authorize/endpoints/authorize](https://docs.flinks.com/api/authorize/endpoints/authorize)
+- **Base URL:** `https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices`
+
+#### Tags
+
+- Authorize
+- Connect
+- MFA
+- Session
+
+#### Properties
+
+- [Documentation](https://docs.flinks.com/api/authorize/endpoints/authorize)
+- [API Reference](https://docs.flinks.com/reference/authorize)
+- [OpenAPI](openapi/flinks-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
+- [Postman Collection](collections/flinks.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
+- [Open Collection](collections/flinks.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+
+### Flinks Accounts Detail API
+
+Returns full detail for each account linked to the session, including account identity (transit / institution / account numbers), balances, up to 90 or 365 days of transactions, and holder KYC information. Long-running requests return HTTP 202 and are polled via the /GetAccountsDetailAsync variant with the same RequestId.
+
+- **Human URL:** [https://docs.flinks.com/reference/getaccountsdetail](https://docs.flinks.com/reference/getaccountsdetail)
+- **Base URL:** `https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices`
+
+#### Tags
+
+- Accounts
+- Transactions
+- Banking Data
+
+#### Properties
+
+- [Documentation](https://docs.flinks.com/reference/getaccountsdetail)
+- [API Reference](https://docs.flinks.com/reference/step-2-calling-for-data)
+- [OpenAPI](openapi/flinks-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
+- [Postman Collection](collections/flinks.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
+- [Open Collection](collections/flinks.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+
+### Flinks Accounts Summary API
+
+Retrieves general account information - cardholder name (when available), account balance, category, and EFT eligibility - without full transaction history, using the RequestId from /Authorize. A /GetAccountsSummaryAsync variant supports polling of long-running requests.
+
+- **Human URL:** [https://docs.flinks.com/reference/getaccountssummary](https://docs.flinks.com/reference/getaccountssummary)
+- **Base URL:** `https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices`
+
+#### Tags
+
+- Accounts
+- Balance
+- Summary
+
+#### Properties
+
+- [Documentation](https://docs.flinks.com/reference/getaccountssummary)
+- [API Reference](https://docs.flinks.com/reference/getaccountssummaryasync)
+- [OpenAPI](openapi/flinks-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
+- [Postman Collection](collections/flinks.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
+- [Open Collection](collections/flinks.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+
+### Flinks Statements API
+
+Signs up one or more of the connected customer accounts to retrieve PDF bank statements issued by their financial institution, referenced by the session RequestId.
+
+- **Human URL:** [https://docs.flinks.com/reference/getstatements-1](https://docs.flinks.com/reference/getstatements-1)
+- **Base URL:** `https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices`
+
+#### Tags
+
+- Statements
+- PDF
+- Documents
+
+#### Properties
+
+- [Documentation](https://docs.flinks.com/reference/getstatements-1)
+- [OpenAPI](openapi/flinks-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
+- [Postman Collection](collections/flinks.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
+- [Open Collection](collections/flinks.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+
+### Flinks Identity API
+
+Surfaces account-holder identity captured during aggregation - name, civic address, email, and phone - and supports /FieldMatch verification that compares supplied applicant fields against the identity on the connected bank account.
+
+- **Human URL:** [https://docs.flinks.com/reference/choose-the-correct-endpoint](https://docs.flinks.com/reference/choose-the-correct-endpoint)
+- **Base URL:** `https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices`
+
+#### Tags
+
+- Identity
+- Verification
+- KYC
+
+#### Properties
+
+- [Documentation](https://docs.flinks.com/reference/choose-the-correct-endpoint)
+- [OpenAPI](openapi/flinks-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
+- [Postman Collection](collections/flinks.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
+- [Open Collection](collections/flinks.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+
+### Flinks Attributes / Analytics API
+
+The Enrich product returns pre-computed attribute packages derived from aggregated transaction data via /GetAttributes, plus /GetCategorization for categorized transactions and /Categories to list available transaction categories.
+
+- **Human URL:** [https://docs.flinks.com/guides/set-up-the-attributes-api-call](https://docs.flinks.com/guides/set-up-the-attributes-api-call)
+- **Base URL:** `https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices`
+
+#### Tags
+
+- Attributes
+- Enrich
+- Categorization
+- Analytics
+
+#### Properties
+
+- [Documentation](https://docs.flinks.com/guides/set-up-the-attributes-api-call)
+- [API Reference](https://docs.flinks.com/docs/list-of-attributes-packages)
+- [OpenAPI](openapi/flinks-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
+- [Postman Collection](collections/flinks.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
+- [Open Collection](collections/flinks.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+
+### Flinks Score API
+
+Analytics endpoints that summarize a connected account into decisioning signals - /GetIncomeAttributes for total, employment, and government income verification, and /GetCreditRiskAttributes for income sources, loan and bill payments, and additional risk measures.
+
+- **Human URL:** [https://docs.flinks.com/docs/getincomeattributes-1](https://docs.flinks.com/docs/getincomeattributes-1)
+- **Base URL:** `https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices`
+
+#### Tags
+
+- Score
+- Income
+- Credit Risk
+
+#### Properties
+
+- [Documentation](https://docs.flinks.com/docs/getincomeattributes-1)
+- [API Reference](https://docs.flinks.com/docs/getcreditriskattributes-1)
+- [OpenAPI](openapi/flinks-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
+- [Postman Collection](collections/flinks.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
+- [Open Collection](collections/flinks.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+
+### Flinks Fraud / KYC API
+
+The Upload product ingests external bank statement / transaction data via /Upload and runs /FraudAnalysis to surface tampering and fraud signals, complementing the live-aggregation KYC data returned on connected accounts.
+
+- **Human URL:** [https://docs.flinks.com/docs/legacy-api-integrations](https://docs.flinks.com/docs/legacy-api-integrations)
+- **Base URL:** `https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices`
+
+#### Tags
+
+- Fraud
+- KYC
+- Upload
+- Risk
+
+#### Properties
+
+- [Documentation](https://docs.flinks.com/docs/legacy-api-integrations)
+- [OpenAPI](openapi/flinks-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
+- [Postman Collection](collections/flinks.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
+- [Open Collection](collections/flinks.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+
+## Common Properties
+
+- [LinkedIn](https://www.linkedin.com/company/flinks)
+- [Website](https://flinks.com/)
+- [Documentation](https://docs.flinks.com/)
+- [Plans](plans/flinks-plans-pricing.yml)
+- [Rate Limits](rate-limits/flinks-rate-limits.yml)
+- [Fin Ops](finops/flinks-finops.yml)
+
+## Ownership
+
+Flinks was acquired by **National Bank of Canada** in 2021 and operates as a wholly owned subsidiary, retaining the Flinks brand and its public HTTP REST API platform documented at [docs.flinks.com](https://docs.flinks.com/).
+
+## Maintainers
+
+**FN:** Kin Lane
+**Email:** kin@apievangelist.com
