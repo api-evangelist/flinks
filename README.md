@@ -1,4 +1,4 @@
-# Flinks (flinks)
+# Flinks
 
 <!-- API-EVANGELIST-PROVENANCE:BEGIN -->
 > ### About this repository
@@ -66,205 +66,133 @@
 
 Flinks is a Canadian financial data platform (owned by National Bank of Canada) that lets businesses connect to consumer and business bank accounts to aggregate account, transaction, and statement data, verify identity, and derive income, credit-risk, and fraud analytics. Access begins with a Flinks Connect authentication session and a multi-step /Authorize (MFA) call, after which banking, enrichment, and analytics endpoints are invoked with the returned RequestId.
 
-**APIs.json:** [https://raw.githubusercontent.com/api-evangelist/flinks/refs/heads/main/apis.yml](https://raw.githubusercontent.com/api-evangelist/flinks/refs/heads/main/apis.yml)
+**Areas:** Financial Data · Open Banking · Bank Aggregation · Fintech · Canada
 
-## Tags
+## Flinks on APIs.io
 
-- Financial Data
-- Open Banking
-- Bank Aggregation
-- Fintech
-- Canada
+Everything profiled for Flinks is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/flinks/](https://apis.io/providers/flinks/)** — or go straight to one of the APIs or properties below.
 
-## Timestamps
+### APIs (6)
 
-- **Created:** 2026-07-01
-- **Modified:** 2026-07-01
+- [Flinks Authorize API](https://apis.io/apis/flinks/flinks-authorize-api/) — The Authorize API from Flinks — 1 operation(s) for authorize.
+- [Flinks Connect API](https://apis.io/apis/flinks/flinks-connect-api/) — The Connect API from Flinks — 5 operation(s) for connect.
+- [Flinks Enrich API](https://apis.io/apis/flinks/flinks-enrich-api/) — The Enrich API from Flinks — 1 operation(s) for enrich.
+- [Flinks Fraud API](https://apis.io/apis/flinks/flinks-fraud-api/) — The Fraud API from Flinks — 2 operation(s) for fraud.
+- [Flinks Identity API](https://apis.io/apis/flinks/flinks-identity-api/) — The Identity API from Flinks — 1 operation(s) for identity.
+- [Flinks Score API](https://apis.io/apis/flinks/flinks-score-api/) — The Score API from Flinks — 2 operation(s) for score.
 
-## APIs
+### Published properties
 
-### Flinks Authorize / Connect API
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
 
-Opens a banking session for a Flinks Connect LoginId. Handles the multi-step MFA flow - an initial /Authorize returns HTTP 203 with SecurityChallenges when a challenge is required, and a resubmission with RequestId and SecurityResponses returns HTTP 200 with the RequestId and Links used for subsequent data calls.
+#### MCP servers (1)
 
-- **Human URL:** [https://docs.flinks.com/api/authorize/endpoints/authorize](https://docs.flinks.com/api/authorize/endpoints/authorize)
-- **Base URL:** `https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices`
+Model Context Protocol servers that expose the API to agents.
 
-#### Tags
+- [flinks](https://apis.io/servers/flinks/flinks/)
 
-- Authorize
-- Connect
-- MFA
-- Session
+#### Agentic access (1)
 
-#### Properties
+Which operations an agent can call, which act, and which need a human in the loop.
 
-- [Documentation](https://docs.flinks.com/api/authorize/endpoints/authorize)
-- [API Reference](https://docs.flinks.com/reference/authorize)
-- [OpenAPI](openapi/flinks-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/flinks.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/flinks.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+- [Flinks Agentic Access](https://apis.io/agentic-access/flinks/flinks-agentic-access/)
 
-### Flinks Accounts Detail API
+#### Collections (7)
 
-Returns full detail for each account linked to the session, including account identity (transit / institution / account numbers), balances, up to 90 or 365 days of transactions, and holder KYC information. Long-running requests return HTTP 202 and are polled via the /GetAccountsDetailAsync variant with the same RequestId.
+Postman and Open Collection request collections.
 
-- **Human URL:** [https://docs.flinks.com/reference/getaccountsdetail](https://docs.flinks.com/reference/getaccountsdetail)
-- **Base URL:** `https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices`
+- [Flinks API](https://apis.io/collections/flinks/open-flinks/)
+- [Flinks Authorize API](https://apis.io/collections/flinks/open-flinks-authorize-api/)
+- [Flinks Authorize Connect API](https://apis.io/collections/flinks/open-flinks-connect-api/)
+- [Flinks Authorize Enrich API](https://apis.io/collections/flinks/open-flinks-enrich-api/)
+- [Flinks Authorize Fraud API](https://apis.io/collections/flinks/open-flinks-fraud-api/)
+- [Flinks Authorize Identity API](https://apis.io/collections/flinks/open-flinks-identity-api/)
+- [Flinks Authorize Score API](https://apis.io/collections/flinks/open-flinks-score-api/)
 
-#### Tags
+#### Security (4)
 
-- Accounts
-- Transactions
-- Banking Data
+Authentication, trust centre, and vulnerability disclosure.
 
-#### Properties
+- [Flinks Authentication](https://apis.io/security/flinks/flinks-authentication/)
+- [Flinks Domain Security](https://apis.io/security/flinks/flinks-domain-security/)
+- [Flinks Trust Center](https://apis.io/security/flinks/flinks-trust-center/)
+- [Flinks Vulnerability Disclosure](https://apis.io/security/flinks/flinks-vulnerability-disclosure/)
 
-- [Documentation](https://docs.flinks.com/reference/getaccountsdetail)
-- [API Reference](https://docs.flinks.com/reference/step-2-calling-for-data)
-- [OpenAPI](openapi/flinks-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/flinks.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/flinks.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+#### Plans and pricing (1)
 
-### Flinks Accounts Summary API
+Published plans, tiers and prices.
 
-Retrieves general account information - cardholder name (when available), account balance, category, and EFT eligibility - without full transaction history, using the RequestId from /Authorize. A /GetAccountsSummaryAsync variant supports polling of long-running requests.
+- [Flinks Plans Pricing](https://apis.io/plans/flinks/flinks-plans-pricing/)
 
-- **Human URL:** [https://docs.flinks.com/reference/getaccountssummary](https://docs.flinks.com/reference/getaccountssummary)
-- **Base URL:** `https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices`
+#### Rate limits (1)
 
-#### Tags
+Published request limits.
 
-- Accounts
-- Balance
-- Summary
+- [Flinks Rate Limits](https://apis.io/rate-limits/flinks/flinks-rate-limits/)
 
-#### Properties
+#### FinOps (1)
 
-- [Documentation](https://docs.flinks.com/reference/getaccountssummary)
-- [API Reference](https://docs.flinks.com/reference/getaccountssummaryasync)
-- [OpenAPI](openapi/flinks-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/flinks.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/flinks.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+What the API costs to run, by operation.
 
-### Flinks Statements API
+- [Flinks Finops](https://apis.io/finops/flinks/flinks-finops/)
 
-Signs up one or more of the connected customer accounts to retrieve PDF bank statements issued by their financial institution, referenced by the session RequestId.
+## Where to find this API
 
-- **Human URL:** [https://docs.flinks.com/reference/getstatements-1](https://docs.flinks.com/reference/getstatements-1)
-- **Base URL:** `https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices`
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
 
-#### Tags
-
-- Statements
-- PDF
-- Documents
-
-#### Properties
-
-- [Documentation](https://docs.flinks.com/reference/getstatements-1)
-- [OpenAPI](openapi/flinks-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/flinks.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/flinks.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-### Flinks Identity API
-
-Surfaces account-holder identity captured during aggregation - name, civic address, email, and phone - and supports /FieldMatch verification that compares supplied applicant fields against the identity on the connected bank account.
-
-- **Human URL:** [https://docs.flinks.com/reference/choose-the-correct-endpoint](https://docs.flinks.com/reference/choose-the-correct-endpoint)
-- **Base URL:** `https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices`
-
-#### Tags
-
-- Identity
-- Verification
-- KYC
-
-#### Properties
-
-- [Documentation](https://docs.flinks.com/reference/choose-the-correct-endpoint)
-- [OpenAPI](openapi/flinks-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/flinks.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/flinks.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-### Flinks Attributes / Analytics API
-
-The Enrich product returns pre-computed attribute packages derived from aggregated transaction data via /GetAttributes, plus /GetCategorization for categorized transactions and /Categories to list available transaction categories.
-
-- **Human URL:** [https://docs.flinks.com/guides/set-up-the-attributes-api-call](https://docs.flinks.com/guides/set-up-the-attributes-api-call)
-- **Base URL:** `https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices`
-
-#### Tags
-
-- Attributes
-- Enrich
-- Categorization
-- Analytics
-
-#### Properties
-
-- [Documentation](https://docs.flinks.com/guides/set-up-the-attributes-api-call)
-- [API Reference](https://docs.flinks.com/docs/list-of-attributes-packages)
-- [OpenAPI](openapi/flinks-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/flinks.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/flinks.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-### Flinks Score API
-
-Analytics endpoints that summarize a connected account into decisioning signals - /GetIncomeAttributes for total, employment, and government income verification, and /GetCreditRiskAttributes for income sources, loan and bill payments, and additional risk measures.
-
-- **Human URL:** [https://docs.flinks.com/docs/getincomeattributes-1](https://docs.flinks.com/docs/getincomeattributes-1)
-- **Base URL:** `https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices`
-
-#### Tags
-
-- Score
-- Income
-- Credit Risk
-
-#### Properties
-
-- [Documentation](https://docs.flinks.com/docs/getincomeattributes-1)
-- [API Reference](https://docs.flinks.com/docs/getcreditriskattributes-1)
-- [OpenAPI](openapi/flinks-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/flinks.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/flinks.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-### Flinks Fraud / KYC API
-
-The Upload product ingests external bank statement / transaction data via /Upload and runs /FraudAnalysis to surface tampering and fraud signals, complementing the live-aggregation KYC data returned on connected accounts.
-
-- **Human URL:** [https://docs.flinks.com/docs/legacy-api-integrations](https://docs.flinks.com/docs/legacy-api-integrations)
-- **Base URL:** `https://{instance}-api.private.fin.ag/v3/{customerId}/BankingServices`
-
-#### Tags
-
-- Fraud
-- KYC
-- Upload
-- Risk
-
-#### Properties
-
-- [Documentation](https://docs.flinks.com/docs/legacy-api-integrations)
-- [OpenAPI](openapi/flinks-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/flinks.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/flinks.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-## Common Properties
-
-- [LinkedIn](https://www.linkedin.com/company/flinks)
 - [Website](https://flinks.com/)
 - [Documentation](https://docs.flinks.com/)
-- [Plans](plans/flinks-plans-pricing.yml)
-- [Rate Limits](rate-limits/flinks-rate-limits.yml)
-- [Fin Ops](finops/flinks-finops.yml)
+- [Blog](https://flinks.com/blog/)
 
-## Ownership
+## API Evangelist rating
 
-Flinks was acquired by **National Bank of Canada** in 2021 and operates as a wholly owned subsidiary, retaining the Flinks brand and its public HTTP REST API platform documented at [docs.flinks.com](https://docs.flinks.com/).
+**Kin Score 27.6** — thin · rubric 0.24.0 · scored 2026-10-17
 
-## Maintainers
+| Facet | Score |
+|---|---|
+| Discoverability | 68.3 |
+| Contract quality | 46.8 |
+| Contract governance | 0.0 |
+| Operational transparency | 7.9 |
+| Developer ergonomics | 32.1 |
+| Access clarity | 13.2 |
 
-**FN:** Kin Lane
-**Email:** kin@apievangelist.com
+**Agent readiness 25.8** — agent-aware
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | derived (partial credit) |
+| Reversibility Documented | — |
+| MCP Server | platform (partial credit) |
+| Auth Clarity | bearer (partial credit) |
+| Idempotency | — |
+| Error Semantics | verified |
+| OpenAPI Examples | — |
+| Rate Limit Signal | derived (partial credit) |
+| Event Surface Described | — |
+| Agent Skills | — |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+
+**Regulatory alignment 18.1** — Banking & Open Finance
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/flinks/](https://apis.io/providers/flinks/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Flinks: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/flinks/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
